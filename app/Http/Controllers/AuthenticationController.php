@@ -57,4 +57,33 @@ class AuthenticationController extends Controller
 
     }
 
+    public function logout(Request $request)
+    {
+        Auth::user()->tokens->each(function ($token, $key) {
+            $token->delete();
+        });
+
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ], 200);
+    }
+
+    public function getCurrentUser(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            // abort(code: 404, message: 'Module not found!');
+            abort(
+                response()->json([
+                    'message' => "Fetching error!",
+                ], 404)
+            );
+        }
+
+        return response([
+            'message' => "User displayed successfully",
+            'results' => $user
+        ], 200);
+    }
 }
