@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\SoapVoucherController;
 use App\Http\Controllers\VoucherController;
 use Illuminate\Http\Request;
@@ -24,5 +25,9 @@ Route::get('/example', [VoucherController::class, 'example']);
 Route::get('/voucher', [VoucherController::class, 'getAllVouchers']);
 Route::get('/voucher/{voucherCode}', [VoucherController::class, 'getVoucherByCode']);
 Route::post('/voucher', [VoucherController::class, 'createNewVoucher']);
+Route::delete('/voucher/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
+
+Route::post('/register', [AuthenticationController::class, 'register']);
+Route::post('/login', [AuthenticationController::class, 'login']);
 
 Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);
