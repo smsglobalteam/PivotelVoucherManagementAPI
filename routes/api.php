@@ -35,6 +35,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     //Voucher SOAP API
     Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);
+    Route::get('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPGetVoucherByCode']);
+    Route::post('/voucher-soap', [SoapVoucherController::class, 'SOAPCreateNewVoucher']);
 
 });
 
