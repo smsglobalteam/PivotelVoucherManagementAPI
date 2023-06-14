@@ -29,7 +29,7 @@ class ApplicationSubmitted extends Mailable
 
     public function build()
     {
-        return $this->subject('Company Registered')
-        ->markdown('emails.company-mail', ['email'=>$this->emailGrab, 'name'=>$this->nameGrab]);
+        return $this->subject('Application Submitted')
+        ->markdown('emails.application-submitted-mail', ['email'=>$this->emailGrab, 'name'=>$this->nameGrab]);
     }
 }

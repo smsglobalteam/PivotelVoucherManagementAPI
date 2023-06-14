@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\SoapVoucherController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\WebServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -43,3 +44,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 //Authentication API
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
+
+//Web Service API
+Route::post('/service', [WebServiceController::class, 'submitApplication']);
