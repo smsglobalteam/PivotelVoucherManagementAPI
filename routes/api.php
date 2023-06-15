@@ -46,4 +46,6 @@ Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
 
 //Web Service API
+Route::get('/service', [WebServiceController::class, 'getAllApplication']);
+Route::get('/service/{id}', [WebServiceController::class, 'getApplicationByID']);
 Route::post('/service', [WebServiceController::class, 'submitApplication']);
