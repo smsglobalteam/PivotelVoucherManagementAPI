@@ -187,4 +187,74 @@ class SoapVoucherController extends Controller
             'Content-Type' => 'application/xml',
         ]);
     }
+
+    public function SOAPEditVoucherByCode($voucherCode, Request $request)
+    {
+        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+
+        if (!$voucher) {
+            return response([
+                'message' => "Voucher not found",
+            ], 404);
+        }
+
+        $xmlData = $request->getContent();
+
+        $validator = Validator::make(['xml' => $xmlData], [
+            'xml' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response([
+                'error' => 'Invalid XML data',
+            ], 400);
+        }
+
+        $xml = simplexml_load_string($xmlData);
+
+        $value = (int) $xml->value;
+        $expiryDate = isset($xml->expiry_date) ? (string) $xml->expiry_date : null;
+        $status = isset($xml->status) ? (string) $xml->status : null;
+        $serviceReference = isset($xml->service_reference) ? (string) $xml->service_reference : null;
+
+        $validator = Validator::make(compact('value', 'expiryDate', 'status', 'serviceReference'), [
+            'value' => 'required|integer',
+            'expiryDate' => 'nullable|date_format:Y-m-d',
+            'status' => 'required|in:active,inactive',
+            'serviceReference' => 'nullable',
+        ]);
+
+        if ($validator->fails()) {
+            return response([
+                'error' => 'Invalid voucher data',
+                'validation_errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $voucher->update([
+            'value' => $value,
+            'expiry_date' => $expiryDate,
+            'status' => $status,
+            'service_reference' => $serviceReference,
+        ]);
+
+        $responseXml = '<response>';
+        $responseXml .= '<message>Voucher edited successfully</message>';
+        $responseXml .= '<results>';
+        $responseXml .= '<voucher>';
+        $responseXml .= '<voucher_code>' . $voucher->voucher_code . '</voucher_code>';
+        $responseXml .= '<value>' . $voucher->value . '</value>';
+        $responseXml .= '<expiry_date>' . $voucher->expiry_date . '</expiry_date>';
+        $responseXml .= '<status>' . $voucher->status . '</status>';
+        $responseXml .= '<service_reference>' . $voucher->service_reference . '</service_reference>';
+        $responseXml .= '<created_by>' . $voucher->created_by . '</created_by>';
+        $responseXml .= '</voucher>';
+        $responseXml .= '</results>';
+        $responseXml .= '</response>';
+
+        return response($responseXml, 200, [
+            'Content-Type' => 'application/xml',
+        ]);
+    }
+
 }

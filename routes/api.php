@@ -44,6 +44,7 @@ Route::put('/voucher-set-inactive/{voucherCode}', [VoucherController::class, 'se
 Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);
 Route::get('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPGetVoucherByCode']);
 Route::post('/voucher-soap', [SoapVoucherController::class, 'SOAPCreateNewVoucher']);
+Route::put('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPEditVoucherByCode']);
 
 //Authentication API
 Route::post('/register', [AuthenticationController::class, 'register']);
