@@ -26,6 +26,13 @@ class VoucherActivationController extends Controller
             ], 404);
         }
 
+        if($voucher->status == "used")
+        {
+            return response([
+                'message' => "Voucher has already been used",
+            ], 404);
+        }
+
         $voucher->status = "used";
         $voucher->save();
 
