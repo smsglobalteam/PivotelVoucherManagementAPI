@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\SoapVoucherController;
+use App\Http\Controllers\VoucherActivationController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WebServiceController;
 use Illuminate\Http\Request;
@@ -45,6 +46,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 //Authentication API
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/login', [AuthenticationController::class, 'login']);
+
+//Voucher Activation API
+Route::get('/voucher-activate/{voucherCode}', [VoucherActivationController::class, 'activateVoucher']);
 
 //Web Service API
 Route::get('/service', [WebServiceController::class, 'getAllApplication']);
