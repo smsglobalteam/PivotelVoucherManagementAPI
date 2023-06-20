@@ -32,7 +32,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/voucher', [VoucherController::class, 'getAllVouchers']);
     Route::get('/voucher/{voucherCode}', [VoucherController::class, 'getVoucherByCode']);
     Route::post('/voucher', [VoucherController::class, 'createNewVoucher']);
-    Route::delete('/voucher/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
+    Route::put('/voucher/{voucherCode}', [VoucherController::class, 'editVoucherByCode']);
+    Route::put('/voucher-set-inactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
 
     //Voucher SOAP API
     Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);

@@ -102,6 +102,38 @@ class VoucherController extends Controller
         ], 200);
     }
 
+    public function editVoucherByCode($voucherCode, Request $request)
+    {
+        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+
+        if(!$voucher)
+        {
+            return response([
+                'message' => "Voucher not found",
+            ], 404);
+        }
+
+        $request->validate([
+            'value' => 'required|integer',
+            'expiry_date' => 'nullable|date_format:Y-m-d',
+            'status' => 'required|in:active,inactive',
+            'service_reference' => 'nullable',
+        ]);
+
+        $voucher->update([
+            'value' => $request->value,
+            'expiry_date' => $request->expiry_date,
+            'status' => $request->status,
+            'service_reference' => $request->service_reference,
+        ]);
+
+        return response([
+            'message' => "Voucher displayed successfully",
+            'results' => $voucher
+        ], 200);
+    }
+
+
     public function setVoucherInactive($voucherCode)
     {
         $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
@@ -117,7 +149,7 @@ class VoucherController extends Controller
         $voucher->save();
 
         return response([
-            'message' => "Voucher deleted successfully",
+            'message' => "Voucher set as inactive",
             'results' => $voucher
         ], 200);
     }

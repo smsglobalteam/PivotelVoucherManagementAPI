@@ -23,14 +23,22 @@ return new class extends Migration
         $table->string('telephone_number');
         $table->string('mobile');
         $table->boolean('subscribe_to_news');
+
         $table->string('primary_street_address');
         $table->string('primary_city');
-        $table->integer('primary_zip_code');
+        $table->string('primary_state');
+        $table->string('primary_zip_code');
+        $table->string('primary_country');
         $table->string('primary_email');
-        $table->string('billing_street_address');
-        $table->string('billing_city');
-        $table->integer('billing_zip_code');
-        $table->string('billing_email');
+
+        $table->boolean('shipping_same_as_primary');
+        $table->string('shipping_street_address')->nullable();
+        $table->string('shipping_city')->nullable();
+        $table->string('shipping_state')->nullable();
+        $table->string('shipping_zip_code')->nullable();
+        $table->string('shipping_country')->nullable();
+        $table->string('shipping_email')->nullable();
+
         $table->string('emergency_contact');
         $table->string('emergency_telephone');
         $table->string('emergency_mobile');
