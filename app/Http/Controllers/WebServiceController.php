@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Mail;
 
 class WebServiceController extends Controller
 {
-    //
     public function getAllApplication()
     {
         $service = ServiceModel::get();
@@ -50,14 +49,22 @@ class WebServiceController extends Controller
             'telephone_number' => 'required|string',
             'mobile' => 'required|string',
             'subscribe_to_news' => 'required|boolean',
+
             'primary_street_address' => 'required|string',
             'primary_city' => 'required|string',
+            'primary_state' => 'required|string',
             'primary_zip_code' => 'required|numeric',
+            'primary_country' => 'required|string',
             'primary_email' => 'required|email',
-            'billing_street_address' => 'required|string',
-            'billing_city' => 'required|string',
-            'billing_zip_code' => 'required|numeric',
-            'billing_email' => 'required|email',
+
+            'shipping_same_as_primary' => 'required|boolean',
+            'shipping_street_address' => 'required|string',
+            'shipping_city' => 'required|string',
+            'shipping_state' => 'required|string',
+            'shipping_zip_code' => 'required|numeric',
+            'shipping_country' => 'required|string',
+            'shipping_email' => 'required|email',
+
             'emergency_contact' => 'required|string',
             'emergency_telephone' => 'required|string',
             'emergency_mobile' => 'required|string',
@@ -160,6 +167,4 @@ class WebServiceController extends Controller
             'results' => $service
         ], 200);
     }
-
-
 }
