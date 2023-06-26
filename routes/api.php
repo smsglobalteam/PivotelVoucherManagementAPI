@@ -39,6 +39,7 @@ Route::post('/voucher-multiple', [VoucherController::class, 'createNewVoucherMul
 Route::post('/voucher-array', [VoucherController::class, 'createNewVoucherArray']);
 Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
 Route::put('/voucher/{voucherCode}', [VoucherController::class, 'editVoucherByCode']);
+Route::put('/voucher-set-active/{voucherCode}', [VoucherController::class, 'setVoucherActive']);
 Route::put('/voucher-set-inactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
 
 //Voucher SOAP API

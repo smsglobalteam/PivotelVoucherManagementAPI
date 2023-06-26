@@ -335,6 +335,24 @@ class VoucherController extends Controller
         ], 200);
     }
 
+    public function setVoucherActive($voucherCode)
+    {
+        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+
+        if (!$voucher) {
+            return response([
+                'message' => "Voucher not found",
+            ], 404);
+        }
+
+        $voucher->status = 'active';
+        $voucher->save();
+
+        return response([
+            'message' => "Voucher set as active",
+            'results' => $voucher
+        ], 200);
+    }
 
     public function setVoucherInactive($voucherCode)
     {
