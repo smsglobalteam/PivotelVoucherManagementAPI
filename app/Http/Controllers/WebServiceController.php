@@ -100,11 +100,11 @@ class WebServiceController extends Controller
 
 
         try {
-            Mail::to($request->primary_email)->send(new ApplicationSubmitted($request->primary_email, $request->full_name));
+            Mail::to($request->primary_email)->send(new ApplicationSubmitted($request));
         } catch (\Exception $e) {
             return response([
                 'message' => 'Email was not sent. An error occured.',
-
+                'catch' => $e->getMessage()
             ], 400);
         }
 
@@ -120,14 +120,22 @@ class WebServiceController extends Controller
             'telephone_number' => $request->telephone_number,
             'mobile' => $request->mobile,
             'subscribe_to_news' => $request->subscribe_to_news,
+
             'primary_street_address' => $request->primary_street_address,
             'primary_city' => $request->primary_city,
+            'primary_state' => $request->primary_state,
             'primary_zip_code' => $request->primary_zip_code,
+            'primary_country' => $request->primary_country,
             'primary_email' => $request->primary_email,
-            'billing_street_address' => $request->billing_street_address,
-            'billing_city' => $request->billing_city,
-            'billing_zip_code' => $request->billing_zip_code,
-            'billing_email' => $request->billing_email,
+
+            'shipping_same_as_primary' => $request->shipping_same_as_primary,
+            'shipping_street_address' => $request->shipping_street_address,
+            'shipping_city' => $request->shipping_city,
+            'shipping_state' => $request->shipping_state,
+            'shipping_zip_code' => $request->shipping_zip_code,
+            'shipping_country' => $request->shipping_country,
+            'shipping_email' => $request->shipping_email,
+
             'emergency_contact' => $request->emergency_contact,
             'emergency_telephone' => $request->emergency_telephone,
             'emergency_mobile' => $request->emergency_mobile,
