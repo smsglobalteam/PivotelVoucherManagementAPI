@@ -41,6 +41,8 @@ Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
 Route::put('/voucher/{voucherCode}', [VoucherController::class, 'editVoucherByCode']);
 Route::put('/voucher-set-active/{voucherCode}', [VoucherController::class, 'setVoucherActive']);
 Route::put('/voucher-set-inactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
+Route::post('/voucher-mass-active', [VoucherController::class, 'massVoucherStatusActive']);
+Route::post('/voucher-mass-inactive', [VoucherController::class, 'massVoucherStatusInactive']);
 
 //Voucher SOAP API
 Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);

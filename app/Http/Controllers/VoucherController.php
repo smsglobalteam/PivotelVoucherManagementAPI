@@ -373,4 +373,52 @@ class VoucherController extends Controller
         ], 200);
     }
 
+    public function massVoucherStatusActive(Request $request)
+    {
+        $voucher_code = $request->input('voucher_code');
+        $status = 'active';
+
+        $vouchers = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
+
+        if ($vouchers->isEmpty()) {
+            return response()->json([
+                'message' => 'Vouchers not found'
+            ], 404);
+        }
+
+        foreach ($vouchers as $voucher) {
+            $voucher->status = $status;
+            $voucher->save();
+        }
+
+        return response()->json([
+            'message' => 'Voucher(s) updated successfully',
+            'results' => $vouchers
+        ], 200);
+    }
+
+    public function massVoucherStatusInactive(Request $request)
+    {
+        $voucher_code = $request->input('voucher_code');
+        $status = 'inactive';
+
+        $vouchers = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
+
+        if ($vouchers->isEmpty()) {
+            return response()->json([
+                'message' => 'Vouchers not found'
+            ], 404);
+        }
+
+        foreach ($vouchers as $voucher) {
+            $voucher->status = $status;
+            $voucher->save();
+        }
+
+        return response()->json([
+            'message' => 'Voucher(s) updated successfully',
+            'results' => $vouchers
+        ], 200);
+    }
+
 }
