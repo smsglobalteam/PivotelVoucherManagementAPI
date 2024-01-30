@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\VoucherHistory;
 use App\Models\VoucherModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class VoucherController extends Controller
 {
@@ -31,7 +33,17 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $vouchers = VoucherModel::get();
+        $vouchers = DB::table('voucher')
+            ->select(
+                'voucher.*',
+                // Select all columns from the voucher table
+                'product.product_code',
+                'product.product_type',
+                'product.product_name'
+
+            )
+            ->leftJoin('product', 'voucher.product_code_reference', '=', 'product.product_code')
+            ->get();
 
         return response([
             'message' => "All vouchers displayed successfully",
@@ -41,7 +53,17 @@ class VoucherController extends Controller
 
     public function getVoucherByCode($voucherCode)
     {
-        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+        $voucher = VoucherModel::where('voucher_code', $voucherCode)
+            ->select(
+                'voucher.*',
+                // Select all columns from the voucher table
+                'product.product_code',
+                'product.product_type',
+                'product.product_name'
+
+            )
+            ->leftJoin('product', 'voucher.product_code_reference', '=', 'product.product_code')
+            ->get();
 
         if (!$voucher) {
             return response([
@@ -55,59 +77,20 @@ class VoucherController extends Controller
         ], 200);
     }
 
-    public function createNewVoucher(Request $request)
-    {
-        $request->validate([
-            'value' => 'required|integer',
-            'expiry_date' => 'nullable|date_format:Y-m-d',
-            'service_reference' => 'nullable',
-        ]);
-
-        function generateVoucherCode($length)
-        {
-            $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $code = '';
-            $max = strlen($characters) - 1;
-
-            for ($i = 0; $i < $length; $i++) {
-                $code .= $characters[random_int(0, $max)];
-            }
-
-            return $code;
-        }
-
-        $voucherCodeExists = true;
-        $voucherCode = '';
-
-        // Generate a unique voucher code
-        while ($voucherCodeExists) {
-            $voucherCode = generateVoucherCode(16);
-
-            $voucherCodeExists = VoucherModel::where('voucher_code', $voucherCode)->exists();
-        }
-
-        $voucher = VoucherModel::create([
-            'voucher_code' => $voucherCode,
-            'value' => $request->value,
-            'expiry_date' => $request->expiry_date,
-            'status' => 'active',
-            'service_reference' => $request->service_reference,
-            'created_by' => 1
-        ]);
-
-        return response([
-            'message' => "Voucher created successfully",
-            'results' => $voucher
-        ], 200);
-    }
-
     public function createNewVoucherMultple(Request $request)
     {
         $request->validate([
+            'serial' => 'nullable',
+            'product_code_reference' => 'nullable|exists:product,product_code',
             'value' => 'required|integer',
             'expiry_date' => 'nullable|date_format:Y-m-d',
-            'service_reference' => 'nullable',
+            'service_reference' => 'nullable|integer',
             'voucher_count' => 'required|integer|min:1',
+            'IMEI' => 'nullable',
+            'PCN' => 'nullable',
+            'sim_number' => 'nullable',
+            'IMSI' => 'nullable',
+            'PUK' => 'nullable',
         ]);
 
         function generateVoucherCode($length)
@@ -137,16 +120,29 @@ class VoucherController extends Controller
             }
 
             $voucher = VoucherModel::create([
+                'serial' => $request->serial,
+                'product_code_reference' => $request->product_code_reference,
                 'voucher_code' => $voucherCode,
                 'value' => $request->value,
                 'expiry_date' => $request->expiry_date,
-                'status' => 'active',
+                'available' => true,
                 'service_reference' => $request->service_reference,
+                'IMEI' => $request->IMEI,
+                'PCN' => $request->PCN,
+                'sim_number' => $request->sim_number,
+                'IMSI' => $request->IMSI,
+                'PUK' => $request->PUK,
                 'created_by' => 1
             ]);
 
             $vouchers[] = $voucher;
         }
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Batch created vouchers";
+        $history->voucher_new_data = json_encode($vouchers);
+        $history->save();
 
         return response([
             'message' => "Vouchers created successfully",
@@ -157,10 +153,17 @@ class VoucherController extends Controller
     public function createNewVoucherArray(Request $request)
     {
         $request->validate([
+            '*.serial' => 'nullable',
+            '*.product_code_reference' => 'nullable|exists:product,product_code',
             '*.value' => 'required|integer',
             '*.expiry_date' => 'nullable|date_format:Y-m-d',
-            '*.service_reference' => 'nullable',
+            '*.service_reference' => 'nullable|integer',
             '*.voucher_count' => 'required|integer|min:1',
+            '*.IMEI' => 'nullable',
+            '*.PCN' => 'nullable',
+            '*.sim_number' => 'nullable',
+            '*.IMSI' => 'nullable',
+            '*.PUK' => 'nullable',
         ]);
 
         function generateVoucherCode($length)
@@ -192,17 +195,30 @@ class VoucherController extends Controller
                 }
 
                 $voucher = VoucherModel::create([
+                    'serial' => $entry['serial'],
+                    'product_code_reference' => $entry['product_code_reference'],
                     'voucher_code' => $voucherCode,
                     'value' => $entry['value'],
                     'expiry_date' => $entry['expiry_date'],
-                    'status' => 'active',
+                    'available' => true,
                     'service_reference' => $entry['service_reference'],
+                    'IMEI' => $entry['IMEI'],
+                    'PCN' => $entry['PCN'],
+                    'sim_number' => $entry['sim_number'],
+                    'IMSI' => $entry['IMSI'],
+                    'PUK' => $entry['PUK'],
                     'created_by' => 1
                 ]);
 
                 $vouchers[] = $voucher;
             }
         }
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Batch created vouchers";
+        $history->voucher_new_data = json_encode($vouchers);
+        $history->save();
 
         return response([
             'message' => "Vouchers created successfully",
@@ -211,103 +227,138 @@ class VoucherController extends Controller
     }
 
     public function createNewVoucherCSV(Request $request)
-{
-    $request->validate([
-        'file' => 'required|file',
-    ]);
-
-    $file = $request->file('file');
-
-    // Check the file extension
-    $extension = $file->getClientOriginalExtension();
-    if ($extension !== 'csv') {
-        return response([
-            'message' => 'Invalid file format. Only CSV files are supported.',
-        ], 400);
-    }
-
-    $filePath = $file->getPathname();
-    $file = fopen($filePath, 'r');
-
-    // Skip the header row
-    fgetcsv($file);
-
-    function generateVoucherCode($length)
     {
-        $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $code = '';
-        $max = strlen($characters) - 1;
-
-        for ($i = 0; $i < $length; $i++) {
-            $code .= $characters[random_int(0, $max)];
-        }
-
-        return $code;
-    }
-
-    $vouchers = [];
-
-    while (($row = fgetcsv($file)) !== false) {
-        $value = $row[0];
-        $expiry_date = $row[1];
-        $service_reference = $row[2];
-        $voucher_count = $row[3];
-
-        // Validate the data
-        $validator = Validator::make([
-            'value' => $value,
-            'expiry_date' => $expiry_date,
-            'service_reference' => $service_reference,
-            'voucher_count' => $voucher_count,
-        ], [
-            'value' => 'required|integer',
-            'expiry_date' => 'nullable|date_format:Y-m-d',
-            'service_reference' => 'nullable',
-            'voucher_count' => 'required|integer|min:1',
+        $request->validate([
+            'file' => 'required|file',
         ]);
 
-        if ($validator->fails()) {
+        $file = $request->file('file');
+
+        // Check the file extension
+        $extension = $file->getClientOriginalExtension();
+        if ($extension !== 'csv') {
             return response([
-                'message' => 'Invalid data in the file.',
-                'errors' => $validator->errors(),
+                'message' => 'Invalid file format. Only CSV files are supported.',
             ], 400);
         }
 
-        // Generate unique voucher codes
-        for ($i = 0; $i < $voucher_count; $i++) {
-            $voucherCodeExists = true;
-            $voucherCode = '';
+        $filePath = $file->getPathname();
+        $file = fopen($filePath, 'r');
 
-            while ($voucherCodeExists) {
-                $voucherCode = generateVoucherCode(16);
-                $voucherCodeExists = VoucherModel::where('voucher_code', $voucherCode)->exists();
+        // Skip the header row
+        fgetcsv($file);
+
+        function generateVoucherCode($length)
+        {
+            $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $code = '';
+            $max = strlen($characters) - 1;
+
+            for ($i = 0; $i < $length; $i++) {
+                $code .= $characters[random_int(0, $max)];
             }
 
-            $voucher = VoucherModel::create([
-                'voucher_code' => $voucherCode,
+            return $code;
+        }
+
+        $vouchers = [];
+
+        while (($row = fgetcsv($file)) !== false) {
+            $serial = $row[0];
+            $product_code_reference = $row[1];
+            $value = $row[2];
+            $expiry_date = $row[3];
+            $service_reference = $row[4];
+            $voucher_count = $row[5];
+            $IMEI = $row[6];
+            $PCN = $row[7];
+            $sim_number = $row[8];
+            $IMSI = $row[9];
+            $PUK = $row[10];
+
+            // Validate the data
+            $validator = Validator::make([
+                'serial' => $serial,
+                'product_code_reference' => $product_code_reference,
                 'value' => $value,
                 'expiry_date' => $expiry_date,
-                'status' => 'active',
                 'service_reference' => $service_reference,
-                'created_by' => 1,
+                'voucher_count' => $voucher_count,
+                'IMEI' => $IMEI,
+                'PCN' => $PCN,
+                'sim_number' => $sim_number,
+                'IMSI' => $IMSI,
+                'PUK' => $PUK
+            ], [
+                'serial' => 'nullable',
+                'product_code_reference' => 'nullable|exists:product,product_code',
+                'value' => 'required|integer',
+                'expiry_date' => 'nullable|date_format:Y-m-d',
+                'service_reference' => 'nullable|integer',
+                'voucher_count' => 'required|integer|min:1',
+                'IMEI' => 'nullable',
+                'PCN' => 'nullable',
+                'sim_number' => 'nullable',
+                'IMSI' => 'nullable',
+                'PUK' => 'nullable',
             ]);
 
-            $vouchers[] = $voucher;
+            if ($validator->fails()) {
+                return response([
+                    'message' => 'Invalid data in the file.',
+                    'errors' => $validator->errors(),
+                ], 400);
+            }
+
+            // Generate unique voucher codes
+            for ($i = 0; $i < $voucher_count; $i++) {
+                $voucherCodeExists = true;
+                $voucherCode = '';
+
+                while ($voucherCodeExists) {
+                    $voucherCode = generateVoucherCode(16);
+                    $voucherCodeExists = VoucherModel::where('voucher_code', $voucherCode)->exists();
+                }
+
+                $voucher = VoucherModel::create([
+                    'serial' => $serial,
+                    'product_code_reference' => $product_code_reference,
+                    'voucher_code' => $voucherCode,
+                    'value' => $value,
+                    'expiry_date' => $expiry_date,
+                    'available' => true,
+                    'service_reference' => $service_reference,
+                    'IMEI' => $IMEI,
+                    'PCN' => $PCN,
+                    'sim_number' => $sim_number,
+                    'IMSI' => $IMSI,
+                    'PUK' => $PUK,
+                    'created_by' => 1,
+                ]);
+
+                $vouchers[] = $voucher;
+            }
         }
+
+        fclose($file);
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "File created vouchers";
+        $history->voucher_new_data = json_encode($vouchers);
+        $history->save();
+
+        return response([
+            'message' => 'Vouchers created successfully',
+            'results' => $vouchers,
+        ], 200);
     }
-
-    fclose($file);
-
-    return response([
-        'message' => 'Vouchers created successfully',
-        'results' => $vouchers,
-    ], 200);
-}
 
 
     public function editVoucherByCode($voucherCode, Request $request)
     {
         $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+        $voucher_old = VoucherModel::where('voucher_code', $voucherCode)->get();
 
         if (!$voucher) {
             return response([
@@ -316,21 +367,46 @@ class VoucherController extends Controller
         }
 
         $request->validate([
+            'serial' => 'nullable',
+            'product_code_reference' => 'nullable|exists:product,product_code',
             'value' => 'required|integer',
             'expiry_date' => 'nullable|date_format:Y-m-d',
-            'status' => 'required|in:active,inactive',
-            'service_reference' => 'nullable',
+            'available' => 'required|boolean',
+            'service_reference' => 'nullable|integer',
+            'IMEI' => 'nullable',
+            'PCN' => 'nullable',
+            'sim_number' => 'nullable',
+            'IMSI' => 'nullable',
+            'PUK' => 'nullable',
         ]);
 
         $voucher->update([
+            'serial' => $request->serial,
+            'product_code_reference' => $request->product_code_reference,
             'value' => $request->value,
             'expiry_date' => $request->expiry_date,
-            'status' => $request->status,
+            'available' => $request->available,
             'service_reference' => $request->service_reference,
+            'IMEI' => $request->IMEI,
+            'PCN' => $request->PCN,
+            'sim_number' => $request->sim_number,
+            'IMSI' => $request->IMSI,
+            'PUK' => $request->PUK,
         ]);
 
+        $voucher_new = array(json_decode($voucher, true));
+
+        if ($voucher_old != $voucher_new) {
+            $history = new VoucherHistory();
+            $history->user_id = 1;
+            $history->transaction = "Edited voucher";
+            $history->voucher_old_data = json_encode($voucher_old);
+            $history->voucher_new_data = json_encode($voucher_new);
+            $history->save();
+        }
+
         return response([
-            'message' => "Voucher displayed successfully",
+            'message' => "Voucher edited successfully",
             'results' => $voucher
         ], 200);
     }
@@ -338,6 +414,7 @@ class VoucherController extends Controller
     public function setVoucherActive($voucherCode)
     {
         $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+        $voucher_old = VoucherModel::where('voucher_code', $voucherCode)->get();
 
         if (!$voucher) {
             return response([
@@ -345,8 +422,22 @@ class VoucherController extends Controller
             ], 404);
         }
 
-        $voucher->status = 'active';
+        if ($voucher->available == true) {
+            return response([
+                'message' => "Voucher is already active",
+            ], 404);
+        }
+
+        $voucher->available =true;
         $voucher->save();
+        $voucher_new = array(json_decode($voucher, true));
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Activated voucher";
+        $history->voucher_old_data = json_encode($voucher_old);
+        $history->voucher_new_data = json_encode($voucher_new);
+        $history->save();
 
         return response([
             'message' => "Voucher set as active",
@@ -357,6 +448,7 @@ class VoucherController extends Controller
     public function setVoucherInactive($voucherCode)
     {
         $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+        $voucher_old = VoucherModel::where('voucher_code', $voucherCode)->get();
 
         if (!$voucher) {
             return response([
@@ -364,8 +456,22 @@ class VoucherController extends Controller
             ], 404);
         }
 
-        $voucher->status = 'inactive';
+        if ($voucher->available == false) {
+            return response([
+                'message' => "Voucher is already inactive",
+            ], 404);
+        }
+
+        $voucher->available = false;
         $voucher->save();
+        $voucher_new = array(json_decode($voucher, true));
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Deactivated voucher";
+        $history->voucher_old_data = json_encode($voucher_old);
+        $history->voucher_new_data = json_encode($voucher_new);
+        $history->save();
 
         return response([
             'message' => "Voucher set as inactive",
@@ -376,9 +482,10 @@ class VoucherController extends Controller
     public function massVoucherStatusActive(Request $request)
     {
         $voucher_code = $request->input('voucher_code');
-        $status = 'active';
+        $available = true;
 
         $vouchers = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
+        $vouchers_old = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
 
         if ($vouchers->isEmpty()) {
             return response()->json([
@@ -387,9 +494,17 @@ class VoucherController extends Controller
         }
 
         foreach ($vouchers as $voucher) {
-            $voucher->status = $status;
+            $voucher->available = $available;
             $voucher->save();
         }
+        $vouchers_new = $vouchers;
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Batch activated vouchers";
+        $history->voucher_old_data = json_encode($vouchers_old);
+        $history->voucher_new_data = json_encode($vouchers_new);
+        $history->save();
 
         return response()->json([
             'message' => 'Voucher(s) updated successfully',
@@ -400,9 +515,10 @@ class VoucherController extends Controller
     public function massVoucherStatusInactive(Request $request)
     {
         $voucher_code = $request->input('voucher_code');
-        $status = 'inactive';
+        $available = false;
 
         $vouchers = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
+        $vouchers_old = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
 
         if ($vouchers->isEmpty()) {
             return response()->json([
@@ -411,14 +527,21 @@ class VoucherController extends Controller
         }
 
         foreach ($vouchers as $voucher) {
-            $voucher->status = $status;
+            $voucher->available = $available;
             $voucher->save();
         }
+        $vouchers_new = $vouchers;
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Batch deactivated vouchers";
+        $history->voucher_old_data = json_encode($vouchers_old);
+        $history->voucher_new_data = json_encode($vouchers_new);
+        $history->save();
 
         return response()->json([
             'message' => 'Voucher(s) updated successfully',
             'results' => $vouchers
         ], 200);
     }
-
 }

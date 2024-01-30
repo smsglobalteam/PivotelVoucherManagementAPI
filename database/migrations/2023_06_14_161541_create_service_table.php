@@ -13,64 +13,85 @@ return new class extends Migration
 {
     Schema::create('service', function (Blueprint $table) {
         $table->id();
-        $table->string('dealer_code');
-        $table->string('tax_id');
-        $table->string('full_name');
-        $table->string('birthdate');
-        $table->string('company_name')->nullable();
-        $table->string('trading_name')->nullable();
-        $table->string('industry');
-        $table->string('telephone_number');
-        $table->string('mobile');
-        $table->boolean('subscribe_to_news');
 
-        $table->string('primary_street_address');
-        $table->string('primary_city');
-        $table->string('primary_state');
-        $table->string('primary_zip_code');
-        $table->string('primary_country');
-        $table->string('primary_email');
+            $table->boolean('is_for_existing_account');
+            $table->string('account_number');
 
-        $table->boolean('shipping_same_as_primary');
-        $table->string('shipping_street_address')->nullable();
-        $table->string('shipping_city')->nullable();
-        $table->string('shipping_state')->nullable();
-        $table->string('shipping_zip_code')->nullable();
-        $table->string('shipping_country')->nullable();
-        $table->string('shipping_email')->nullable();
+            //Personal Information
+            $table->string('title');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('birthdate');
+            $table->string('company_name')->nullable();
+            $table->string('trading_name')->nullable();
+            $table->string('email');
+            $table->string('telephone_number');
+            $table->string('mobile');
+            $table->boolean('sign_up_marketing')->nullable();
 
-        $table->string('emergency_contact');
-        $table->string('emergency_telephone');
-        $table->string('emergency_mobile');
-        $table->string('emergency_email');
-        $table->string('emergency_address');
-        $table->string('emergency_relationship');
-        $table->string('id_type');
-        $table->string('id_expiry');
-        $table->string('social_security_no');
-        $table->string('inquiry_password');
-        $table->string('card_type');
-        $table->string('card_holder_name');
-        $table->string('card_number');
-        $table->string('card_expiry_date');
-        $table->integer('card_ccv');
-        $table->string('plan_type');
-        $table->string('satellite_network');
-        $table->string('service_type');
-        $table->string('service_plan');
-        $table->string('plan_term');
-        $table->string('sim_number');
-        $table->string('equipment_provider');
-        $table->string('hardware_model');
-        $table->string('imei_esn');
-        $table->string('vessel_narrative');
-        $table->string('requested_activation_date');
-        $table->string('cost_center')->nullable();
-        $table->string('tracertrak_full_name')->nullable();
-        $table->string('tracertrak_mobile')->nullable();
-        $table->string('tracertrak_email')->nullable();
-        $table->boolean('tracertrak_geos')->nullable();
-        $table->timestamps();
+            //Billing
+            $table->string('billing_email');
+            $table->string('billing_street_address');
+            $table->string('billing_city');
+            $table->string('billing_zip_code');
+            $table->string('billing_country');
+            $table->string('billing_state');
+           
+            //Shipping
+            $table->boolean('shipping_same_as_primary');
+            $table->string('shipping_street_address')->nullable();
+            $table->string('shipping_city')->nullable();
+            $table->string('shipping_zip_code')->nullable();
+            $table->string('shipping_country')->nullable();
+            $table->string('shipping_state')->nullable();
+
+            //Credit Card
+            $table->string('card_type');
+            $table->string('card_holder_name');
+            $table->string('card_number');
+            $table->string('card_expiry_date');
+            $table->integer('card_ccv');
+
+            //Plan Type
+            $table->string('satellite_network');
+            $table->string('hardware_type')->nullable();
+            $table->string('plan_family')->nullable();
+            $table->string('sim_number');
+            $table->string('imei_esn');
+            $table->string('vessel_narrative');
+            $table->string('requested_activation_date');
+            $table->boolean('is_for_maritime')->nullable();
+
+            //Vessel Information
+            $table->string('vessel_name');
+            $table->string('fleet_id');
+            $table->string('country_of_registry');
+            $table->integer('number_of_persons_onboard');
+            $table->string('home_port');
+            $table->string('port_of_registry');
+            $table->string('vessel_type');
+            $table->string('sea_going_flag');
+            $table->string('self_propelled_flag');
+            $table->string('over_100_gt_flag');
+            $table->string('tonnage_of_vessel');
+            $table->string('year_of_build');
+            $table->string('imo_number');
+            $table->string('call_sign');
+            $table->string('aaic');
+            $table->string('mmsi');
+
+            //Vessel Emergency
+            $table->string('vessel_emergency_contact_name');
+            $table->string('vessel_emergency_contact_address');
+            $table->string('vessel_emergency_street_address');
+            $table->string('vessel_emergency_city');
+            $table->string('vessel_emergency_zip_code');
+            $table->string('vessel_emergency_country');
+            $table->string('vessel_emergency_state');
+            $table->string('vessel_emergency_contact_mobile');
+            $table->string('vessel_emergency_contact_email');
+
+            $table->timestamps();
     });
 }
 

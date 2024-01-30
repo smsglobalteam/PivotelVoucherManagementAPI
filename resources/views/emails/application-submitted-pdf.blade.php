@@ -1,77 +1,122 @@
-@component("mail::message")
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 
 <style>
-/* Row container */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-}
+    /* Row container */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+    }
 
-/* Column */
-.col {
-  flex: 1;
-  padding: 10px; /* Adjust as needed */
-}
+    /* Column */
+    .col {
+        flex: 1;
+        padding: 10px;
+        /* Adjust as needed */
+    }
 
-/* Example media query for responsiveness */
-@media screen and (max-width: 768px) {
-  .col {
-    flex-basis: 100%; /* Set column to full width on small screens */
-  }
-}
+    /* Example media query for responsiveness */
+    @media screen and (max-width: 768px) {
+        .col {
+            flex-basis: 100%;
+            /* Set column to full width on small screens */
+        }
+    }
 
-/* Label Styles */
-.form-label {
-  display: inline-block;
-  margin-bottom: 0.5rem;
-  margin-top:10px;
-  color:black;
-}
+    /* Label Styles */
+    .form-label {
+        display: inline-block;
+        margin-bottom: 0.5rem;
+        margin-top: 10px;
+        color: black;
+    }
 
-/* Input Styles */
-.form-control {
-  display: block;
-  width: 100%;
-  padding: 0.375rem 0.75rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
-  background-clip: padding-box;
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
+    /* Input Styles */
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
 
-.form-control:focus {
-  color: #495057;
-  background-color: #fff;
-  border-color: #80bdff;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
+    .form-control:focus {
+        color: #495057;
+        background-color: #fff;
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
 
-.form-control::placeholder {
-  color: #6c757d;
-  opacity: 1;
-}
+    .form-control::placeholder {
+        color: #6c757d;
+        opacity: 1;
+    }
 
-.form-control:disabled,
-.form-control[readonly] {
-  background-color: #e9ecef;
-  opacity: 1;
-}
+    .form-control:disabled,
+    .form-control[readonly] {
+        background-color: #e9ecef;
+        opacity: 1;
+    }
 
-.form-header-style{
-  margin-top:30px;
-}
+    .form-header-style {
+        margin-top: 30px;
+    }
 
+    /* Common input styles */
+    input {
+        box-sizing: border-box;
+        padding: 10px;
+        font-size: 16px;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+    }
 
+    /* Input focus style */
+    input:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    /* Input hover style */
+    input:hover {
+        border-color: #999;
+    }
+
+    /* Input disabled style */
+    input:disabled {
+        background-color: #f7f7f7;
+        cursor: not-allowed;
+    }
+
+    /* PDF specific styles */
+    @media print {
+        input {
+            border: none;
+            padding: 0;
+            font-size: 12pt;
+            background-color: transparent;
+        }
+
+        input:-moz-read-only {
+            background-color: transparent;
+            border: none;
+        }
+
+        input[disabled] {
+            color: #999;
+        }
+    }
 </style>
 <div style="width:100%;">
-<center><b style="font-size:25px;color:black;margin-bottom:15px;text-align:center">Application Form<b></center>
+    <center><b style="font-size:25px;color:black;margin-bottom:15px;text-align:center;font-weight:800;">Application Form<b></center>
 </div>
 <br>
 <br>
@@ -481,9 +526,3 @@
 <br>
 {{-- END OF FORMS --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-
-@component('mail::subcopy')
-This is an auto generated email. Please do not reply to this email.
-@endcomponent
-
-@endcomponent

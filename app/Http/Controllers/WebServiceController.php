@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 
 class WebServiceController extends Controller
 {
+
     public function getAllApplication()
     {
         $service = ServiceModel::get();
@@ -23,8 +24,7 @@ class WebServiceController extends Controller
     {
         $service = ServiceModel::where('id', $id)->first();
 
-        if(!$service)
-        {
+        if (!$service) {
             return response([
                 'message' => "Application not found",
             ], 404);
@@ -39,68 +39,87 @@ class WebServiceController extends Controller
     public function submitApplication(Request $request)
     {
         $request->validate([
-            'dealer_code' => 'required|string',
-            'tax_id' => 'required|string',
-            'full_name' => 'required|string',
+            'is_for_existing_account' => 'required|boolean',
+            'account_number' => 'required|string',
+
+            //Personal Information
+            'title' => 'required|string',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
             'birthdate' => 'required|date_format:Y-m-d',
             'company_name' => 'nullable|string',
             'trading_name' => 'nullable|string',
-            'industry' => 'required|string',
+            'email' => 'required|email',
             'telephone_number' => 'required|string',
             'mobile' => 'required|string',
-            'subscribe_to_news' => 'required|boolean',
+            'sign_up_marketing' => 'nullable|boolean',
 
-            'primary_street_address' => 'required|string',
-            'primary_city' => 'required|string',
-            'primary_state' => 'required|string',
-            'primary_zip_code' => 'required|numeric',
-            'primary_country' => 'required|string',
-            'primary_email' => 'required|email',
+            //Billing
+            'billing_email' => 'required|email',
+            'billing_street_address' => 'required|string',
+            'billing_city' => 'required|string',
+            'billing_zip_code' => 'required|numeric',
+            'billing_country' => 'required|string',
+            'billing_state' => 'required|string',
 
+            //Shipping
             'shipping_same_as_primary' => 'required|boolean',
-            'shipping_street_address' => 'required|string',
-            'shipping_city' => 'required|string',
-            'shipping_state' => 'required|string',
-            'shipping_zip_code' => 'required|numeric',
-            'shipping_country' => 'required|string',
-            'shipping_email' => 'required|email',
+            'shipping_street_address' => 'nullable|string',
+            'shipping_city' => 'nullable|string',
+            'shipping_zip_code' => 'nullable|numeric',
+            'shipping_country' => 'nullable|string',
+            'shipping_state' => 'nullable|string',
 
-            'emergency_contact' => 'required|string',
-            'emergency_telephone' => 'required|string',
-            'emergency_mobile' => 'required|string',
-            'emergency_email' => 'required|email',
-            'emergency_address' => 'required|string',
-            'emergency_relationship' => 'required|string',
-            'id_type' => 'required|string',
-            'id_expiry' => 'required|date_format:Y-m-d',
-            'social_security_no' => 'required|string',
-            'inquiry_password' => 'required|string',
+            //Credit Card
             'card_type' => 'required|string',
             'card_holder_name' => 'required|string',
             'card_number' => 'required|string',
-            'card_expiry_date' => 'required|date_format:Y-m-d',
+            'card_expiry_date' => 'required',
             'card_ccv' => 'required|numeric',
-            'plan_type' => 'required|string',
+
+            //Plan Type
             'satellite_network' => 'required|string',
-            'service_type' => 'required|string',
-            'service_plan' => 'required|string',
-            'plan_term' => 'required|string',
+            'hardware_type' => 'nullable|string',
+            'plan_family' => 'nullable|string',
             'sim_number' => 'required|string',
-            'equipment_provider' => 'required|string',
-            'hardware_model' => 'required|string',
             'imei_esn' => 'required|string',
             'vessel_narrative' => 'required|string',
             'requested_activation_date' => 'required|date_format:Y-m-d',
-            'cost_center' => 'nullable|string',
-            'tracertrak_full_name' => 'nullable|string',
-            'tracertrak_mobile' => 'nullable|string',
-            'tracertrak_email' => 'nullable|string',
-            'tracertrak_geos' => 'nullable|boolean'
+            'is_for_maritime' => 'nullable|boolean',
+
+            //Vessel Information
+            'vessel_name' => 'required|string',
+            'fleet_id' => 'required|string',
+            'country_of_registry' => 'required|string',
+            'number_of_persons_onboard' => 'required|numeric',
+            'home_port' => 'required|string',
+            'port_of_registry' => 'required|string',
+            'vessel_type' => 'required|string',
+            'sea_going_flag' => 'required|string',
+            'self_propelled_flag' => 'required|string',
+            'over_100_gt_flag' => 'required|string',
+            'tonnage_of_vessel' => 'required|string',
+            'year_of_build' => 'required|string',
+            'imo_number' => 'required|string',
+            'call_sign' => 'required|string',
+            'aaic' => 'required|string',
+            'mmsi' => 'required|string',
+
+            //Vessel Information
+            'vessel_emergency_contact_name' => 'required|string',
+            'vessel_emergency_contact_address' => 'required|string',
+            'vessel_emergency_street_address' => 'required|string',
+            'vessel_emergency_city' => 'required|string',
+            'vessel_emergency_zip_code' => 'required|string',
+            'vessel_emergency_country' => 'required|string',
+            'vessel_emergency_state' => 'required|string',
+            'vessel_emergency_contact_mobile' => 'required|string',
+            'vessel_emergency_contact_email' => 'required|email',
         ]);
 
 
         try {
-            Mail::to($request->primary_email)->send(new ApplicationSubmitted($request));
+            Mail::to($request->email)->send(new ApplicationSubmitted($request));
         } catch (\Exception $e) {
             return response([
                 'message' => 'Email was not sent. An error occured.',
@@ -110,63 +129,83 @@ class WebServiceController extends Controller
 
 
         $service = ServiceModel::create([
-            'dealer_code' => $request->dealer_code,
-            'tax_id' => $request->tax_id,
-            'full_name' => $request->full_name,
+            'is_for_existing_account' => $request->is_for_existing_account,
+            'account_number' => $request->account_number,
+
+            // Personal Information
+            'title' => $request->title,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
             'birthdate' => $request->birthdate,
             'company_name' => $request->company_name,
             'trading_name' => $request->trading_name,
-            'industry' => $request->industry,
+            'email' => $request->email,
             'telephone_number' => $request->telephone_number,
             'mobile' => $request->mobile,
-            'subscribe_to_news' => $request->subscribe_to_news,
+            'sign_up_marketing' => $request->sign_up_marketing,
 
-            'primary_street_address' => $request->primary_street_address,
-            'primary_city' => $request->primary_city,
-            'primary_state' => $request->primary_state,
-            'primary_zip_code' => $request->primary_zip_code,
-            'primary_country' => $request->primary_country,
-            'primary_email' => $request->primary_email,
+            // Billing
+            'billing_email' => $request->billing_email,
+            'billing_street_address' => $request->billing_street_address,
+            'billing_city' => $request->billing_city,
+            'billing_zip_code' => $request->billing_zip_code,
+            'billing_country' => $request->billing_country,
+            'billing_state' => $request->billing_state,
 
+            // Shipping
             'shipping_same_as_primary' => $request->shipping_same_as_primary,
             'shipping_street_address' => $request->shipping_street_address,
             'shipping_city' => $request->shipping_city,
-            'shipping_state' => $request->shipping_state,
             'shipping_zip_code' => $request->shipping_zip_code,
             'shipping_country' => $request->shipping_country,
-            'shipping_email' => $request->shipping_email,
+            'shipping_state' => $request->shipping_state,
 
-            'emergency_contact' => $request->emergency_contact,
-            'emergency_telephone' => $request->emergency_telephone,
-            'emergency_mobile' => $request->emergency_mobile,
-            'emergency_email' => $request->emergency_email,
-            'emergency_address' => $request->emergency_address,
-            'emergency_relationship' => $request->emergency_relationship,
-            'id_type' => $request->id_type,
-            'id_expiry' => $request->id_expiry,
-            'social_security_no' => $request->social_security_no,
-            'inquiry_password' => $request->inquiry_password,
+            // Credit Card
             'card_type' => $request->card_type,
             'card_holder_name' => $request->card_holder_name,
             'card_number' => $request->card_number,
             'card_expiry_date' => $request->card_expiry_date,
             'card_ccv' => $request->card_ccv,
-            'plan_type' => $request->plan_type,
+
+            // Plan Type
             'satellite_network' => $request->satellite_network,
-            'service_type' => $request->service_type,
-            'service_plan' => $request->service_plan,
-            'plan_term' => $request->plan_term,
+            'hardware_type' => $request->hardware_type,
+            'plan_family' => $request->plan_family,
             'sim_number' => $request->sim_number,
-            'equipment_provider' => $request->equipment_provider,
-            'hardware_model' => $request->hardware_model,
             'imei_esn' => $request->imei_esn,
             'vessel_narrative' => $request->vessel_narrative,
             'requested_activation_date' => $request->requested_activation_date,
-            'cost_center' => $request->cost_center,
-            'tracertrak_full_name' => $request->tracertrak_full_name,
-            'tracertrak_mobile' => $request->tracertrak_mobile,
-            'tracertrak_email' => $request->tracertrak_email,
-            'tracertrak_geos' => $request->tracertrak_geos
+            'is_for_maritime' => $request->is_for_maritime,
+
+            // Vessel Information
+            'vessel_name' => $request->vessel_name,
+            'fleet_id' => $request->fleet_id,
+            'country_of_registry' => $request->country_of_registry,
+            'number_of_persons_onboard' => $request->number_of_persons_onboard,
+            'home_port' => $request->home_port,
+            'port_of_registry' => $request->port_of_registry,
+            'vessel_type' => $request->vessel_type,
+            'sea_going_flag' => $request->sea_going_flag,
+            'self_propelled_flag' => $request->self_propelled_flag,
+            'over_100_gt_flag' => $request->over_100_gt_flag,
+            'tonnage_of_vessel' => $request->tonnage_of_vessel,
+            'year_of_build' => $request->year_of_build,
+            'imo_number' => $request->imo_number,
+            'call_sign' => $request->call_sign,
+            'aaic' => $request->aaic,
+            'mmsi' => $request->mmsi,
+
+            // Vessel Information
+            'vessel_emergency_contact_name' => $request->vessel_emergency_contact_name,
+            'vessel_emergency_contact_address' => $request->vessel_emergency_contact_address,
+            'vessel_emergency_street_address' => $request->vessel_emergency_street_address,
+            'vessel_emergency_city' => $request->vessel_emergency_city,
+            'vessel_emergency_zip_code' => $request->vessel_emergency_zip_code,
+            'vessel_emergency_country' => $request->vessel_emergency_country,
+            'vessel_emergency_state' => $request->vessel_emergency_state,
+            'vessel_emergency_contact_mobile' => $request->vessel_emergency_contact_mobile,
+            'vessel_emergency_contact_email' => $request->vessel_emergency_contact_email,
+
         ]);
 
 

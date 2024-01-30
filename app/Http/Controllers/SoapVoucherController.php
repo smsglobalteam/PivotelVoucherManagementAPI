@@ -256,5 +256,4 @@ class SoapVoucherController extends Controller
             'Content-Type' => 'application/xml',
         ]);
     }
-
 }

@@ -6,11 +6,9 @@ use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class AuthenticationController extends Controller
 {
-    //
     public function register(Request $request)
     {
         $request->validate([
@@ -51,10 +49,9 @@ class AuthenticationController extends Controller
             ]);
         }
 
-        return response([
-            'message' => "Invalid credentials",
-        ], 400);
-
+        return response()->json([
+            'message' => 'Invalid credentials',
+        ], 401);
     }
 
     public function logout(Request $request)
