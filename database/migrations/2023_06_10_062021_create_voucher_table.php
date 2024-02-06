@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('product_code_reference')->nullable();
             $table->integer('value');
             $table->date('expiry_date')->nullable();
-            $table->boolean('available');
+            $table->boolean('available')->default(true);
+            $table->boolean('depleted')->default(false);
             $table->integer('service_reference')->nullable();
             $table->string("IMEI")->nullable();
             $table->string("PCN")->nullable();

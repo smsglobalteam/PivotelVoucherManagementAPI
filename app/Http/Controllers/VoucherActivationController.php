@@ -14,7 +14,6 @@ class VoucherActivationController extends Controller
 
         $request->validate([
             'voucher_code' => 'required',
-            'deplete' => 'required|boolean',
         ]);
 
         $voucherCode = $request->voucher_code;
@@ -32,19 +31,25 @@ class VoucherActivationController extends Controller
         if($voucher->available == false)
         {
             return response([
-                'message' => "Voucher has already been used",
+                'message' => "Voucher is not active",
             ], 404);
         }
 
-        if($request->deplete == false)
+        if($voucher->expiry_date < date('Y-m-d'))
         {
             return response([
-                'message' => "Voucher is valid but deplete is set to false",
+                'message' => "Voucher has expired",
+            ], 404);
+        }
+   
+        if($voucher->depleted == true)
+        {
+            return response([
+                'message' => "Voucher is already depleted ",
             ], 404);
         }
 
-
-        $voucher->available = false;
+        $voucher->depleted = true;
         $voucher->save();
         
         $voucher_new = array(json_decode($voucher, true));

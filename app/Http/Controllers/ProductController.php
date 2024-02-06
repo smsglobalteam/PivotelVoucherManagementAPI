@@ -57,7 +57,7 @@ class ProductController extends Controller
 
     public function editProductByID($id, Request $request)
     {
-        $product = ProductModel::where('id', $id)->first();
+        $product = ProductModel::where('product_code', $id)->with('voucher')->first();
 
         if (!$product) {
             return response([
@@ -66,27 +66,27 @@ class ProductController extends Controller
         }
 
         $request->validate([
-            'product_code' => 'required|unique:product,product_code,' . $product->id,
+            // 'product_code' => 'required|unique:product,product_code,' . $product->id,
             'product_type' => 'nullable',
             'product_name' => 'required',
         ]);
 
         $product ->update([
-            'product_code' => $request->product_code,
+            // 'product_code' => $request->product_code,
             'product_type' => $request->product_type,
             'product_name' => $request->product_name,
             'created_by' => 1
         ]);
 
         return response([
-            'message' => "Product deleted successfully",
+            'message' => "Product updated successfully",
             'results' => $product
         ], 200);
     }
 
     public function deleteProductByID($id)
     {
-        $product = ProductModel::where('id', $id)->first();
+        $product = ProductModel::where('product_code', $id)->with('voucher')->first();
 
         if (!$product) {
             return response([
