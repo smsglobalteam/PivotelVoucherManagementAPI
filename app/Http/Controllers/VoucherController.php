@@ -147,7 +147,7 @@ class VoucherController extends Controller
         return response([
             'message' => "Vouchers created successfully",
             'results' => $vouchers
-        ], 200);
+        ], 201);
     }
 
     public function createNewVoucherArray(Request $request)
@@ -223,7 +223,7 @@ class VoucherController extends Controller
         return response([
             'message' => "Vouchers created successfully",
             'results' => $vouchers
-        ], 200);
+        ], 201);
     }
 
     public function createNewVoucherCSV(Request $request)
@@ -239,7 +239,7 @@ class VoucherController extends Controller
         if ($extension !== 'csv') {
             return response([
                 'message' => 'Invalid file format. Only CSV files are supported.',
-            ], 400);
+            ], 422);
         }
 
         $filePath = $file->getPathname();
@@ -307,7 +307,7 @@ class VoucherController extends Controller
                 return response([
                     'message' => 'Invalid data in the file.',
                     'errors' => $validator->errors(),
-                ], 400);
+                ], 422);
             }
 
             // Generate unique voucher codes
@@ -351,7 +351,7 @@ class VoucherController extends Controller
         return response([
             'message' => 'Vouchers created successfully',
             'results' => $vouchers,
-        ], 200);
+        ], 201);
     }
 
 
@@ -408,7 +408,7 @@ class VoucherController extends Controller
         return response([
             'message' => "Voucher edited successfully",
             'results' => $voucher
-        ], 200);
+        ], 201);
     }
 
     public function setVoucherActive($voucherCode)
@@ -442,7 +442,7 @@ class VoucherController extends Controller
         return response([
             'message' => "Voucher set as active",
             'results' => $voucher
-        ], 200);
+        ], 201);
     }
 
     public function setVoucherInactive($voucherCode)
@@ -476,7 +476,7 @@ class VoucherController extends Controller
         return response([
             'message' => "Voucher set as inactive",
             'results' => $voucher
-        ], 200);
+        ], 201);
     }
 
     public function massVoucherStatusActive(Request $request)
@@ -509,7 +509,7 @@ class VoucherController extends Controller
         return response()->json([
             'message' => 'Voucher(s) updated successfully',
             'results' => $vouchers
-        ], 200);
+        ], 201);
     }
 
     public function massVoucherStatusInactive(Request $request)
@@ -542,6 +542,6 @@ class VoucherController extends Controller
         return response()->json([
             'message' => 'Voucher(s) updated successfully',
             'results' => $vouchers
-        ], 200);
+        ], 201);
     }
 }

@@ -183,7 +183,7 @@ class SoapVoucherController extends Controller
         $responseXml .= '</results>';
         $responseXml .= '</response>';
 
-        return Response::make($responseXml, 200, [
+        return Response::make($responseXml, 201, [
             'Content-Type' => 'application/xml',
         ]);
     }
@@ -252,7 +252,7 @@ class SoapVoucherController extends Controller
         $responseXml .= '</results>';
         $responseXml .= '</response>';
 
-        return response($responseXml, 200, [
+        return response($responseXml, 201, [
             'Content-Type' => 'application/xml',
         ]);
     }

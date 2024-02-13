@@ -64,6 +64,6 @@ class VoucherActivationController extends Controller
         return response([
             'message' => "Voucher has been successfully activated",
             'results' => $voucher
-        ], 200);
+        ], 201);
     }
 }

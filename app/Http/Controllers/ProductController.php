@@ -52,7 +52,7 @@ class ProductController extends Controller
         return response([
             'message' => "Product created successfully",
             'results' => $product
-        ], 200);
+        ], 201);
     }
 
     public function editProductByID($id, Request $request)
@@ -81,7 +81,7 @@ class ProductController extends Controller
         return response([
             'message' => "Product updated successfully",
             'results' => $product
-        ], 200);
+        ], 201);
     }
 
     public function deleteProductByID($id)
