@@ -14,6 +14,7 @@ class ProductController extends Controller
 
         return response([
             'message' => "All products displayed successfully",
+            'return_code' => '0',
             'results' => $products
         ], 200);
     }
@@ -25,6 +26,7 @@ class ProductController extends Controller
         if (!$product) {
             return response([
                 'message' => "Product not found",
+                'return_code' => '-101',
             ], 404);
         }
 
@@ -51,6 +53,7 @@ class ProductController extends Controller
 
         return response([
             'message' => "Product created successfully",
+            'return_code' => '0',
             'results' => $product
         ], 201);
     }
@@ -62,6 +65,7 @@ class ProductController extends Controller
         if (!$product) {
             return response([
                 'message' => "Product not found",
+                'return_code' => '-101',
             ], 404);
         }
 
@@ -80,6 +84,7 @@ class ProductController extends Controller
 
         return response([
             'message' => "Product updated successfully",
+            'return_code' => '0',
             'results' => $product
         ], 201);
     }
@@ -91,6 +96,7 @@ class ProductController extends Controller
         if (!$product) {
             return response([
                 'message' => "Product not found",
+                'return_code' => '-101',
             ], 404);
         }
 
@@ -98,6 +104,7 @@ class ProductController extends Controller
 
         return response([
             'message' => "Product deleted successfully",
+            'return_code' => '0',
             'results' => $product
         ], 200);
     }

@@ -25,6 +25,7 @@ class VoucherActivationController extends Controller
         {
             return response([
                 'message' => "Voucher not found",
+                'return_code' => '-201',
             ], 404);
         }
 
@@ -32,6 +33,7 @@ class VoucherActivationController extends Controller
         {
             return response([
                 'message' => "Voucher is not active",
+                'return_code' => '-202',
             ], 404);
         }
 
@@ -39,6 +41,7 @@ class VoucherActivationController extends Controller
         {
             return response([
                 'message' => "Voucher has expired",
+                'return_code' => '-203',
             ], 404);
         }
    
@@ -46,6 +49,7 @@ class VoucherActivationController extends Controller
         {
             return response([
                 'message' => "Voucher is already depleted ",
+                'return_code' => '-204',
             ], 404);
         }
 

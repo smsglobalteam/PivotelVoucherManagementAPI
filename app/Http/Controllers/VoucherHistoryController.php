@@ -14,6 +14,7 @@ class VoucherHistoryController extends Controller
 
         return response([
             'message' => "All voucher history displayed successfully",
+            'return_code' => '0',
             'results' => $voucherHistory,
         ], 200);
     }

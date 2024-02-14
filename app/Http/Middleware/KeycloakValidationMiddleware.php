@@ -12,7 +12,10 @@ class KeycloakValidationMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!$request->hasHeader('Authorization')) {
-            return response()->json(['message' => 'Authorization header is required'], 401);
+            return response()->json([
+                'message' => 'Authorization header is required',
+                'return_code' => '-1',
+            ], 401);
         } else {
 
             if (env('AUTH_ENABLE') === true) {
@@ -34,8 +37,9 @@ class KeycloakValidationMiddleware
                 } else {
                     return response([
                         'message' => 'Error. Token is not valid.',
-                        'keycloak_response' => $response->json(),
-                        'token' => $token,
+                        'return_code' => '-2',
+                        // 'keycloak_response' => $response->json(),
+                        // 'token' => $token,
                     ], $response->status());
                 }
             } else {

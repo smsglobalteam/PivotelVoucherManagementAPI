@@ -47,6 +47,7 @@ class VoucherController extends Controller
 
         return response([
             'message' => "All vouchers displayed successfully",
+            'return_code' => '0',
             'results' => $vouchers
         ], 200);
     }
@@ -68,11 +69,13 @@ class VoucherController extends Controller
         if (!$voucher) {
             return response([
                 'message' => "Voucher not found",
+                'return_code' => '-201',
             ], 404);
         }
 
         return response([
             'message' => "Voucher displayed successfully",
+            'return_code' => '0',
             'results' => $voucher
         ], 200);
     }
@@ -146,6 +149,7 @@ class VoucherController extends Controller
 
         return response([
             'message' => "Vouchers created successfully",
+            'return_code' => '0',
             'results' => $vouchers
         ], 201);
     }
@@ -222,6 +226,7 @@ class VoucherController extends Controller
 
         return response([
             'message' => "Vouchers created successfully",
+            'return_code' => '0',
             'results' => $vouchers
         ], 201);
     }
@@ -239,6 +244,7 @@ class VoucherController extends Controller
         if ($extension !== 'csv') {
             return response([
                 'message' => 'Invalid file format. Only CSV files are supported.',
+                'return_code' => '-205',
             ], 422);
         }
 
@@ -306,6 +312,7 @@ class VoucherController extends Controller
             if ($validator->fails()) {
                 return response([
                     'message' => 'Invalid data in the file.',
+                    'return_code' => '-206',
                     'errors' => $validator->errors(),
                 ], 422);
             }
@@ -350,6 +357,7 @@ class VoucherController extends Controller
 
         return response([
             'message' => 'Vouchers created successfully',
+            'return_code' => '0',
             'results' => $vouchers,
         ], 201);
     }
@@ -363,6 +371,7 @@ class VoucherController extends Controller
         if (!$voucher) {
             return response([
                 'message' => "Voucher not found",
+                'return_code' => '-201',
             ], 404);
         }
 
@@ -407,6 +416,7 @@ class VoucherController extends Controller
 
         return response([
             'message' => "Voucher edited successfully",
+            'return_code' => '0',
             'results' => $voucher
         ], 201);
     }
@@ -419,12 +429,14 @@ class VoucherController extends Controller
         if (!$voucher) {
             return response([
                 'message' => "Voucher not found",
+                'return_code' => '-201',
             ], 404);
         }
 
         if ($voucher->available == true) {
             return response([
                 'message' => "Voucher is already active",
+                'return_code' => '-207',
             ], 404);
         }
 
@@ -441,6 +453,7 @@ class VoucherController extends Controller
 
         return response([
             'message' => "Voucher set as active",
+            'return_code' => '0',
             'results' => $voucher
         ], 201);
     }
@@ -453,12 +466,14 @@ class VoucherController extends Controller
         if (!$voucher) {
             return response([
                 'message' => "Voucher not found",
+                'return_code' => '-201',
             ], 404);
         }
 
         if ($voucher->available == false) {
             return response([
                 'message' => "Voucher is already inactive",
+                'return_code' => '-208',
             ], 404);
         }
 
@@ -489,7 +504,8 @@ class VoucherController extends Controller
 
         if ($vouchers->isEmpty()) {
             return response()->json([
-                'message' => 'Vouchers not found'
+                'message' => 'Vouchers not found',
+                'return_code' => '-201',
             ], 404);
         }
 
@@ -522,7 +538,8 @@ class VoucherController extends Controller
 
         if ($vouchers->isEmpty()) {
             return response()->json([
-                'message' => 'Vouchers not found'
+                'message' => 'Vouchers not found',
+                'return_code' => '-201',
             ], 404);
         }
 
@@ -541,6 +558,7 @@ class VoucherController extends Controller
 
         return response()->json([
             'message' => 'Voucher(s) updated successfully',
+            'return_code' => '0',
             'results' => $vouchers
         ], 201);
     }
