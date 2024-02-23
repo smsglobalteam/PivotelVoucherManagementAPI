@@ -29,14 +29,6 @@ class VoucherActivationController extends Controller
             ], 404);
         }
 
-        if($voucher->available == false)
-        {
-            return response([
-                'message' => "Voucher is not active",
-                'return_code' => '-202',
-            ], 404);
-        }
-
         if($voucher->expiry_date < date('Y-m-d'))
         {
             return response([
@@ -44,7 +36,7 @@ class VoucherActivationController extends Controller
                 'return_code' => '-203',
             ], 404);
         }
-   
+
         if($voucher->depleted == true)
         {
             return response([
@@ -53,7 +45,16 @@ class VoucherActivationController extends Controller
             ], 404);
         }
 
+        if($voucher->available == false)
+        {
+            return response([
+                'message' => "Voucher is not active",
+                'return_code' => '-202',
+            ], 404);
+        }
+
         $voucher->depleted = true;
+        $voucher->available = false;
         $voucher->save();
         
         $voucher_new = array(json_decode($voucher, true));

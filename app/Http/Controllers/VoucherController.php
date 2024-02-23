@@ -440,7 +440,14 @@ class VoucherController extends Controller
             ], 404);
         }
 
-        $voucher->available =true;
+        if ($voucher->depleted == true) {
+            return response([
+                'message' => "Depleted voucher cannot be activated",
+                'return_code' => '-204',
+            ], 404);
+        }
+
+        $voucher->available = true;
         $voucher->save();
         $voucher_new = array(json_decode($voucher, true));
 
@@ -496,11 +503,11 @@ class VoucherController extends Controller
 
     public function massVoucherStatusActive(Request $request)
     {
-        $voucher_code = $request->input('voucher_code');
+        $voucherCodes = $request->input('voucher_code');
         $available = true;
 
-        $vouchers = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
-        $vouchers_old = VoucherModel::whereIn('voucher_code', $voucher_code)->get();
+        $vouchersOld = VoucherModel::whereIn('voucher_code', $voucherCodes)->get();
+        $vouchers = VoucherModel::whereIn('voucher_code', $voucherCodes)->get();
 
         if ($vouchers->isEmpty()) {
             return response()->json([
@@ -509,24 +516,48 @@ class VoucherController extends Controller
             ], 404);
         }
 
+        $errors = [];
+        $updatedVouchers = [];
         foreach ($vouchers as $voucher) {
+            if ($voucher->available) {
+                $errors[] = "Voucher {$voucher->voucher_code} is already active.";
+                continue;
+            }
+
+            if ($voucher->depleted) {
+                $errors[] = "Depleted voucher {$voucher->voucher_code} cannot be activated.";
+                continue;
+            }
+
             $voucher->available = $available;
             $voucher->save();
+            $updatedVouchers[] = $voucher;
         }
-        $vouchers_new = $vouchers;
 
-        $history = new VoucherHistory();
-        $history->user_id = 1;
-        $history->transaction = "Batch activated vouchers";
-        $history->voucher_old_data = json_encode($vouchers_old);
-        $history->voucher_new_data = json_encode($vouchers_new);
-        $history->save();
+        if (!empty($updatedVouchers)) {
+            $history = new VoucherHistory();
+            $history->user_id = 1;
+            $history->transaction = "Batch activated vouchers";
+            $history->voucher_old_data = json_encode($vouchersOld);
+            $history->voucher_new_data = json_encode($updatedVouchers);
+            $history->save();
+        }
+
+        if (!empty($errors)) {
+            return response()->json([
+                'message' => 'Some vouchers could not be updated',
+                'errors' => $errors,
+                'results' => $vouchers
+            ], 422);
+        }
 
         return response()->json([
             'message' => 'Voucher(s) updated successfully',
             'results' => $vouchers
         ], 201);
     }
+
+
 
     public function massVoucherStatusInactive(Request $request)
     {
