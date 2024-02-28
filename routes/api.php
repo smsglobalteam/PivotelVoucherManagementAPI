@@ -6,6 +6,7 @@ use App\Http\Controllers\SoapVoucherController;
 use App\Http\Controllers\VoucherActivationController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\VoucherHistoryController;
+use App\Http\Controllers\VoucherMainController;
 use App\Http\Controllers\WebServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -34,27 +35,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
 Route::group(['middleware' => 'token-validation'], function () {
-    //Voucher API
-    Route::get('/example', [VoucherController::class, 'example']);
-    Route::get('/voucher', [VoucherController::class, 'getAllVouchers']);
-    Route::get('/voucher/{voucherCode}', [VoucherController::class, 'getVoucherByCode']);
-    Route::post('/voucher', [VoucherController::class, 'createNewVoucherMultple']);
-    Route::post('/voucher-array', [VoucherController::class, 'createNewVoucherArray']);
-    Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
-    Route::put('/voucher/{voucherCode}', [VoucherController::class, 'editVoucherByCode']);
-    Route::patch('/voucher-set-active/{voucherCode}', [VoucherController::class, 'setVoucherActive']);
-    Route::patch('/voucher-set-inactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
-    Route::post('/voucher-mass-active', [VoucherController::class, 'massVoucherStatusActive']);
-    Route::post('/voucher-mass-inactive', [VoucherController::class, 'massVoucherStatusInactive']);
+
+    // Voucher API
+    Route::get('/getAllVouchers', [VoucherMainController::class, 'getAllVouchers']);
+    Route::get('/getVoucher/{voucherCode}', [VoucherMainController::class, 'getVoucher']);
+    Route::post('/createVoucher', [VoucherMainController::class, 'createVoucher']);
+    Route::put('/editVoucher/{voucherCode}', [VoucherMainController::class, 'editVoucher']);
+
 
     //Voucher History API
     Route::get('/voucher-history', [VoucherHistoryController::class, 'getAllHistory']);
-
-    //Voucher SOAP API
-    Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);
-    Route::get('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPGetVoucherByCode']);
-    Route::post('/voucher-soap', [SoapVoucherController::class, 'SOAPCreateNewVoucher']);
-    Route::put('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPEditVoucherByCode']);
 
     //Product API
     Route::get('/product', [ProductController::class, 'getAllProducts']);
@@ -62,11 +52,6 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/product/{id}', [ProductController::class, 'getProductByID']);
     Route::put('/product/{id}', [ProductController::class, 'editProductByID']);
     Route::delete('/product/{id}', [ProductController::class, 'deleteProductByID']);
-
-
-    //Authentication API
-    Route::post('/register', [AuthenticationController::class, 'register']);
-    Route::post('/login', [AuthenticationController::class, 'login']);
 
     //Voucher Activation API
     Route::post('/voucher-activate', [VoucherActivationController::class, 'activateVoucher']);
@@ -77,3 +62,28 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::post('/service', [WebServiceController::class, 'submitApplication']);
 
 });
+
+
+// -------------Inactive routes--------------
+//OLD Voucher API
+// Route::get('/example', [VoucherController::class, 'example']);
+// Route::get('/voucher', [VoucherController::class, 'getAllVouchers']);
+// Route::get('/voucher/{voucherCode}', [VoucherController::class, 'getVoucherByCode']);
+// Route::post('/voucher', [VoucherController::class, 'createNewVoucherMultple']);
+// Route::post('/voucher-array', [VoucherController::class, 'createNewVoucherArray']);
+// Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
+// Route::put('/voucher/{voucherCode}', [VoucherController::class, 'editVoucherByCode']);
+// Route::patch('/voucher-set-active/{voucherCode}', [VoucherController::class, 'setVoucherActive']);
+// Route::patch('/voucher-set-inactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
+// Route::post('/voucher-mass-active', [VoucherController::class, 'massVoucherStatusActive']);
+// Route::post('/voucher-mass-inactive', [VoucherController::class, 'massVoucherStatusInactive']);
+
+//Voucher SOAP API
+// Route::get('/voucher-soap', [SoapVoucherController::class, 'SOAPGetAllVouchers']);
+// Route::get('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPGetVoucherByCode']);
+// Route::post('/voucher-soap', [SoapVoucherController::class, 'SOAPCreateNewVoucher']);
+// Route::put('/voucher-soap/{voucherCode}', [SoapVoucherController::class, 'SOAPEditVoucherByCode']);
+
+//Authentication API
+// Route::post('/register', [AuthenticationController::class, 'register']);
+// Route::post('/login', [AuthenticationController::class, 'login']);

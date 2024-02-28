@@ -11,21 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('voucher', function (Blueprint $table) {
+        Schema::create('voucher_main', function (Blueprint $table) {
             $table->id();
             $table->string('voucher_code')->unique();
-            $table->string('serial')->nullable();
             $table->string('product_code_reference')->nullable();
-            $table->integer('value');
             $table->date('expiry_date')->nullable();
+            $table->integer('voucher_count');
+            $table->integer('value');
             $table->boolean('available')->default(true);
-            $table->boolean('depleted')->default(false);
-            $table->integer('service_reference')->nullable();
-            $table->string("IMEI")->nullable();
-            $table->string("PCN")->nullable();
-            $table->string("sim_number")->nullable();
-            $table->string("IMSI")->nullable();
-            $table->string("PUK")->nullable();
             $table->bigInteger('created_by')->unsigned();
             $table->timestamps();
         });
@@ -36,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('voucher');
+        Schema::dropIfExists('voucher_main');
     }
 };
