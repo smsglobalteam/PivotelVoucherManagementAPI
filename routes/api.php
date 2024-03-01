@@ -39,8 +39,11 @@ Route::group(['middleware' => 'token-validation'], function () {
     // Voucher API
     Route::get('/getAllVouchers', [VoucherMainController::class, 'getAllVouchers']);
     Route::get('/getVoucher/{voucherCode}', [VoucherMainController::class, 'getVoucher']);
+    Route::get('/nextAvailable/{voucherCode}', [VoucherMainController::class, 'nextAvailable']);
     Route::post('/createVoucher', [VoucherMainController::class, 'createVoucher']);
     Route::put('/editVoucher/{voucherCode}', [VoucherMainController::class, 'editVoucher']);
+    Route::patch('/voucher-set-active/{voucherCode}', [VoucherMainController::class, 'setVoucherActive']);
+    Route::patch('/voucher-set-inactive/{voucherCode}', [VoucherMainController::class, 'setVoucherInactive']);
 
 
     //Voucher History API

@@ -24,8 +24,8 @@ class VoucherMainController extends Controller
     public function getVoucher($voucherCode)
     {
         $voucher = VoucherMainModel::with('voucherChildren')
-                ->where('voucher_code', $voucherCode)
-                ->get();
+            ->where('voucher_code', $voucherCode)
+            ->get();
 
         return response([
             'message' => "All voucher displayed successfully",
@@ -33,6 +33,28 @@ class VoucherMainController extends Controller
             'results' => $voucher,
         ], 200);
     }
+
+    public function nextAvailable($voucherCode)
+    {
+        $voucher = VoucherMainModel::with([
+            'voucherChildren' => function ($query) {
+                $query->where('depleted', 0)->first();
+            }
+        ])
+            ->where('voucher_code', $voucherCode)
+            ->get();
+
+        // Since `first()` in the relationship closure does not limit the eager loading to a single record globally,
+        // but rather executes the `first()` method for each parent model instance,
+        // you might need to manually pick the first `voucherChildren` for each voucher if necessary.
+
+        return response([
+            'message' => "All voucher displayed successfully",
+            'return_code' => '0',
+            'results' => $voucher,
+        ], 200);
+    }
+
 
     public function createVoucher(Request $request)
     {
@@ -116,4 +138,77 @@ class VoucherMainController extends Controller
         ], 200);
     }
 
+    public function setVoucherActive($voucherCode)
+    {
+        $voucher = VoucherMainModel::where('voucher_code', $voucherCode)->first();
+        $voucher_old = VoucherMainModel::where('voucher_code', $voucherCode)->get();
+
+        if (!$voucher) {
+            return response([
+                'message' => "Voucher not found",
+                'return_code' => '-201',
+            ], 404);
+        }
+
+        if ($voucher->available == true) {
+            return response([
+                'message' => "Voucher is already active",
+                'return_code' => '-207',
+            ], 404);
+        }
+
+        $voucher->available = true;
+        $voucher->save();
+        $voucher_new = array(json_decode($voucher, true));
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Activated voucher";
+        $history->voucher_old_data = json_encode($voucher_old);
+        $history->voucher_new_data = json_encode($voucher_new);
+        $history->save();
+
+        return response([
+            'message' => "Voucher set as active",
+            'return_code' => '0',
+            'results' => $voucher
+        ], 201);
+    }
+
+    public function setVoucherInactive($voucherCode)
+    {
+        $voucher = VoucherMainModel::where('voucher_code', $voucherCode)->first();
+        $voucher_old = VoucherMainModel::where('voucher_code', $voucherCode)->get();
+
+        if (!$voucher) {
+            return response([
+                'message' => "Voucher not found",
+                'return_code' => '-201',
+            ], 404);
+        }
+
+        if ($voucher->available == false) {
+            return response([
+                'message' => "Voucher is already inactive",
+                'return_code' => '-207',
+            ], 404);
+        }
+
+        $voucher->available = false;
+        $voucher->save();
+        $voucher_new = array(json_decode($voucher, true));
+
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Activated voucher";
+        $history->voucher_old_data = json_encode($voucher_old);
+        $history->voucher_new_data = json_encode($voucher_new);
+        $history->save();
+
+        return response([
+            'message' => "Voucher set as inactive",
+            'return_code' => '0',
+            'results' => $voucher
+        ], 201);
+    }
 }
