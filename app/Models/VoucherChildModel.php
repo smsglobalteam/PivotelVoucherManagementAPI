@@ -10,5 +10,5 @@ class VoucherChildModel extends Model
     public $table = "voucher_child";
     // use HasFactory;
     protected $guarded = [];
-    protected $hidden = ['id'];
+    // protected $hidden = ['id'];
 }
