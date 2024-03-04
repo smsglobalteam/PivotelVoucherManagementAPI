@@ -106,7 +106,7 @@ class VoucherMainController extends Controller
     {
         $request->validate([
             'product_code_reference' => 'nullable|exists:product,product_code',
-            'value' => 'nullable|integer',
+            'value' => 'required|integer',
             'expiry_date' => 'nullable|date_format:Y-m-d',
         ]);
 
