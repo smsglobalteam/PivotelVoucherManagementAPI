@@ -42,8 +42,11 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/nextAvailable/{voucherCode}', [VoucherMainController::class, 'nextAvailable']);
     Route::post('/createVoucher', [VoucherMainController::class, 'createVoucher']);
     Route::put('/editVoucher/{voucherCode}', [VoucherMainController::class, 'editVoucher']);
-    Route::patch('/voucher-set-active/{voucherCode}', [VoucherMainController::class, 'setVoucherActive']);
-    Route::patch('/voucher-set-inactive/{voucherCode}', [VoucherMainController::class, 'setVoucherInactive']);
+    Route::patch('/setActive/{voucherCode}', [VoucherMainController::class, 'setVoucherActive']);
+    Route::patch('/setInactive/{voucherCode}', [VoucherMainController::class, 'setVoucherInactive']);
+
+    //Voucher Activation API
+    Route::post('/consumeVoucher', [VoucherActivationController::class, 'consumeVoucher']);
 
 
     //Voucher History API
@@ -56,8 +59,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::put('/product/{id}', [ProductController::class, 'editProductByID']);
     Route::delete('/product/{id}', [ProductController::class, 'deleteProductByID']);
 
-    //Voucher Activation API
-    Route::post('/voucher-activate', [VoucherActivationController::class, 'activateVoucher']);
+    
 
     //Web Service API
     Route::get('/service', [WebServiceController::class, 'getAllApplication']);

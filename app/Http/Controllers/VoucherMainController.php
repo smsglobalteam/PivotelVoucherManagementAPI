@@ -42,11 +42,7 @@ class VoucherMainController extends Controller
             }
         ])
             ->where('voucher_code', $voucherCode)
-            ->get();
-
-        // Since `first()` in the relationship closure does not limit the eager loading to a single record globally,
-        // but rather executes the `first()` method for each parent model instance,
-        // you might need to manually pick the first `voucherChildren` for each voucher if necessary.
+            ->first();
 
         return response([
             'message' => "All voucher displayed successfully",
@@ -95,10 +91,14 @@ class VoucherMainController extends Controller
         $history->voucher_new_data = json_encode($vouchers);
         $history->save();
 
+        $voucherGenerated = VoucherMainModel::with('voucherChildren')
+            ->where('voucher_code', $request->voucher_code)
+            ->get();
+
         return response([
             'message' => "Vouchers created successfully",
             'return_code' => '0',
-            'results' => $vouchers
+            'results' => $voucherGenerated
         ], 201);
     }
 
