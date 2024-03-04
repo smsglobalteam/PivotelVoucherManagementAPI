@@ -21,7 +21,7 @@ class ProductController extends Controller
 
     public function getProductByID($id)
     {
-        $product = ProductModel::where('product_code', $id)->with('voucher')->first();
+        $product = ProductModel::where('product_code', $id)->first();
 
         if (!$product) {
             return response([
@@ -91,7 +91,7 @@ class ProductController extends Controller
 
     public function deleteProductByID($id)
     {
-        $product = ProductModel::where('product_code', $id)->with('voucher')->first();
+        $product = ProductModel::where('product_code', $id)->first();
 
         if (!$product) {
             return response([
