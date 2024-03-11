@@ -60,7 +60,7 @@ class ProductController extends Controller
 
     public function editProductByID($id, Request $request)
     {
-        $product = ProductModel::where('product_code', $id)->with('voucher')->first();
+        $product = ProductModel::where('product_code', $id)->first();
 
         if (!$product) {
             return response([
