@@ -60,6 +60,9 @@ class VoucherMainController extends Controller
             'expiry_date' => 'nullable|date_format:Y-m-d',
             'voucher_count' => 'required|integer|min:1',
             'value' => 'required|integer',
+            'serviceID' => 'required|string',
+            'business_unit' => 'required|string',
+            'serial_number' => 'required|string',
         ]);
 
 
@@ -80,6 +83,9 @@ class VoucherMainController extends Controller
 
             $voucher = VoucherChildModel::create([
                 'voucher_code_reference' => $request->voucher_code,
+                'serviceID' => $request->serviceID,
+                'business_unit' => $request->business_unit,
+                'serial_number' => $request->serial_number,
             ]);
 
             $vouchers[] = $voucher;
