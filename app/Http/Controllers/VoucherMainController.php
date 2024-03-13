@@ -60,9 +60,9 @@ class VoucherMainController extends Controller
             'expiry_date' => 'nullable|date_format:Y-m-d',
             'voucher_count' => 'required|integer|min:1',
             'value' => 'required|integer',
-            'serviceID' => 'required|string',
-            'business_unit' => 'required|string',
-            'serial_number' => 'required|string',
+            'serviceID' => 'nullable|string',
+            'business_unit' => 'nullable|string',
+            'serial_number' => 'nullable|string',
         ]);
 
 
