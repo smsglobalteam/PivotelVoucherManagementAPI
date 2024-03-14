@@ -19,28 +19,32 @@ class KeycloakValidationMiddleware
         } else {
 
             if (env('AUTH_ENABLE') === true) {
-                $token = $request->header('Authorization');
+                $authorizationHeader = $request->header('Authorization');
+                $tokenParts = explode(' ', $authorizationHeader);
 
-                $response = Http::withHeaders(['Authorization' => $token])
-                    ->get(env('AUTH_USERINFO_URL'));
+                // Assuming the format is "Bearer <token>", $tokenParts[1] should be your token.
+                $token = $tokenParts[1] ?? ''; // Using the null coalescing operator to avoid undefined index errors.
 
-                if ($response->successful()) {
-                    $keycloakData = $response->json();
 
-                    if (isset($keycloakData['preferred_username'])) {
-                        $preferredUsername = $keycloakData['preferred_username'];
+                $response = Http::asForm()->post(env('AUTH_TOKEN_INTROSPECT'), [
+                    'client_id' => 'php-authflow-secret',
+                    'client_secret' => 'm5ZfaiJAa5YddxoxSJsoS2iR9EYq6jqt',
+                    'token' => $token,
+                ]);
 
-                        $request->attributes->add(['preferred_username' => $preferredUsername]);
-                    }
+                $responseArray = $response->json();
+
+                if ($responseArray['active']) {
 
                     return $next($request);
+
                 } else {
+
                     return response([
                         'message' => 'Error. Token is not valid.',
                         'return_code' => '-2',
-                        // 'keycloak_response' => $response->json(),
-                        // 'token' => $token,
                     ], $response->status());
+
                 }
             } else {
                 $request->attributes->add(['preferred_username' => 'auth-off']);
@@ -49,3 +53,32 @@ class KeycloakValidationMiddleware
         }
     }
 }
+
+// This is for user token
+
+// if (env('AUTH_ENABLE') === true) {
+//     $token = $request->header('Authorization');
+
+//     $response = Http::withHeaders(['Authorization' => $token])
+//         ->get(env('AUTH_USERINFO_URL'));
+
+//     if ($response->successful()) {
+//         $keycloakData = $response->json();
+
+//         if (isset($keycloakData['preferred_username'])) {
+//             $preferredUsername = $keycloakData['preferred_username'];
+
+//             $request->attributes->add(['preferred_username' => $preferredUsername]);
+//         }
+
+//         return $next($request);
+//     } else {
+//         return response([
+//             'message' => 'Error. Token is not valid.',
+//             'return_code' => '-2',
+//         ], $response->status());
+//     }
+// } else {
+//     $request->attributes->add(['preferred_username' => 'auth-off']);
+//     return $next($request);
+// }
