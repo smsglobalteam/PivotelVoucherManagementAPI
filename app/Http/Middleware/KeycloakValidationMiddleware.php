@@ -27,8 +27,8 @@ class KeycloakValidationMiddleware
 
 
                 $response = Http::asForm()->post(env('AUTH_TOKEN_INTROSPECT'), [
-                    'client_id' => 'php-authflow-secret',
-                    'client_secret' => 'm5ZfaiJAa5YddxoxSJsoS2iR9EYq6jqt',
+                    'client_id' => env('AUTH_CONFIDENTIAL_CLIENT_ID'),
+                    'client_secret' => env('AUTH_CONFIDENTIAL_CLIENT_SECRET'),
                     'token' => $token,
                 ]);
 
