@@ -176,7 +176,7 @@ class VoucherController extends Controller
                 'value' => 'required|integer',
                 'serviceID' => 'required|string',
                 'business_unit' => 'required|string',
-                'serial_number' => 'required|string',
+                'serial_number' => 'required|string|unique:voucher_main,serial_number',
                 'IMEI' => 'required|string',
                 'SIMNarrative' => 'required|string',
                 'SIMNo' => 'required|string',
