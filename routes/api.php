@@ -40,6 +40,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/getAllVouchers', [VoucherController::class, 'getAllVouchers']);
     Route::get('/getVoucher/{voucherCode}', [VoucherController::class, 'getVoucher']);
     Route::get('/nextAvailable/{voucherCode}', [VoucherController::class, 'nextAvailable']);
+    Route::post('/createVoucher', [VoucherController::class, 'createVoucher']);
     Route::post('/createVoucherCSV', [VoucherController::class, 'createVoucherCSV']);
     Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
     Route::put('/editVoucher/{voucherCode}', [VoucherController::class, 'editVoucher']);
