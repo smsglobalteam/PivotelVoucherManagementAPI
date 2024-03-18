@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class VoucherModel extends Model
 {
     //
-    public $table = "voucher";
+    public $table = "voucher_main";
     // use HasFactory;
     protected $guarded = [];
 

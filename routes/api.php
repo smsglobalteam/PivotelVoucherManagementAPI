@@ -37,13 +37,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::group(['middleware' => 'token-validation'], function () {
 
     // Voucher API
-    Route::get('/getAllVouchers', [VoucherMainController::class, 'getAllVouchers']);
-    Route::get('/getVoucher/{voucherCode}', [VoucherMainController::class, 'getVoucher']);
-    Route::get('/nextAvailable/{voucherCode}', [VoucherMainController::class, 'nextAvailable']);
-    Route::post('/createVoucher', [VoucherMainController::class, 'createVoucher']);
-    Route::put('/editVoucher/{voucherCode}', [VoucherMainController::class, 'editVoucher']);
-    Route::patch('/setActive/{voucherCode}', [VoucherMainController::class, 'setVoucherActive']);
-    Route::patch('/setInactive/{voucherCode}', [VoucherMainController::class, 'setVoucherInactive']);
+    Route::get('/getAllVouchers', [VoucherController::class, 'getAllVouchers']);
+    Route::get('/getVoucher/{voucherCode}', [VoucherController::class, 'getVoucher']);
+    Route::get('/nextAvailable/{voucherCode}', [VoucherController::class, 'nextAvailable']);
+    Route::post('/createVoucherCSV', [VoucherController::class, 'createVoucherCSV']);
+    Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
+    Route::put('/editVoucher/{voucherCode}', [VoucherController::class, 'editVoucher']);
+    Route::patch('/setActive/{voucherCode}', [VoucherController::class, 'setVoucherActive']);
+    Route::patch('/setInactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
 
     //Voucher Activation API
     Route::post('/consumeVoucher', [VoucherActivationController::class, 'consumeVoucher']);
