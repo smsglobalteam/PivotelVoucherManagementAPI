@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('voucher_main', function (Blueprint $table) {
-            $table->id();
+            $table->bigInteger('id')->unsigned();
     
             $table->date('expire_date')->nullable();
             $table->integer('value');
@@ -36,8 +36,8 @@ return new class extends Migration
 
             $table->bigInteger('batch_id');
            
-            $table->string('created_by');
-            $table->string('update_by');
+            $table->string('created_by')->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
         });
 

@@ -39,16 +39,18 @@ class ProductController extends Controller
     public function createNewProduct(Request $request)
     {
         $request->validate([
-            'product_code' => 'required|unique:product,product_code',
-            'product_type' => 'nullable',
-            'product_name' => 'required',
+            'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
+            'product_id' => 'required|integer|unique:product,product_id',
+            'product_name' => 'required|unique:product,product_name',
+            'supplier' => 'required',
         ]);
 
         $product = ProductModel::create([
             'product_code' => $request->product_code,
-            'product_type' => $request->product_type,
+            'product_id' => $request->product_id,
             'product_name' => $request->product_name,
-            'created_by' => 1
+            'supplier' => $request->supplier,
+            'created_by' => "user"
         ]);
 
         return response([
@@ -70,16 +72,19 @@ class ProductController extends Controller
         }
 
         $request->validate([
-            // 'product_code' => 'required|unique:product,product_code,' . $product->id,
-            'product_type' => 'nullable',
-            'product_name' => 'required',
+            // 'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
+            // 'product_id' => 'required|integer|unique:product,product_id',
+            'product_name' => 'required|unique:product,product_name,'. $product->id,
+            'supplier' => 'required',
         ]);
+
 
         $product ->update([
             // 'product_code' => $request->product_code,
-            'product_type' => $request->product_type,
+            // 'product_id' => $request->product_id,
             'product_name' => $request->product_name,
-            'created_by' => 1
+            'supplier' => $request->supplier,
+            'updated_by' => "user"
         ]);
 
         return response([

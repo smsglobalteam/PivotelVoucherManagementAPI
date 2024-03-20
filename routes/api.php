@@ -38,14 +38,14 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     // Voucher API
     Route::get('/getAllVouchers', [VoucherController::class, 'getAllVouchers']);
-    Route::get('/getVoucher/{voucherCode}', [VoucherController::class, 'getVoucher']);
+    Route::get('/getVoucher/{serial}', [VoucherController::class, 'getVoucher']);
     Route::get('/nextAvailable/{voucherCode}', [VoucherController::class, 'nextAvailable']);
     Route::post('/createVoucher', [VoucherController::class, 'createVoucher']);
     Route::post('/createVoucherCSV', [VoucherController::class, 'createVoucherCSV']);
     Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
-    Route::put('/editVoucher/{voucherCode}', [VoucherController::class, 'editVoucher']);
-    Route::patch('/setActive/{voucherCode}', [VoucherController::class, 'setVoucherActive']);
-    Route::patch('/setInactive/{voucherCode}', [VoucherController::class, 'setVoucherInactive']);
+    Route::put('/editVoucher/{serial}', [VoucherController::class, 'editVoucher']);
+    Route::patch('/setActive/{serial}', [VoucherController::class, 'setVoucherActive']);
+    Route::patch('/setInactive/{serial}', [VoucherController::class, 'setVoucherInactive']);
 
     //Voucher Activation API
     Route::post('/consumeVoucher', [VoucherActivationController::class, 'consumeVoucher']);

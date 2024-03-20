@@ -19,8 +19,8 @@ return new class extends Migration
 
             $table->string('supplier');
 
-            $table->string('created_by');
-            $table->string('update_by');
+            $table->string('created_by')->nullable();
+            $table->string('updated_by')->nullable();
             $table->timestamps();
         });
     }

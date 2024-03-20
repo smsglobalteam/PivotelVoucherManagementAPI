@@ -44,9 +44,9 @@ class VoucherController extends Controller
 
 
 
-    public function getVoucher($voucherCode)
+    public function getVoucher($serial)
     {
-        $voucher = VoucherModel::where('voucher_code', $voucherCode)
+        $voucher = VoucherModel::where('serial', $serial)
             ->first();
 
         if (!$voucher) {
@@ -66,41 +66,46 @@ class VoucherController extends Controller
     public function createVoucher(Request $request)
     {
         $request->validate([
-            'voucher_code' => 'required|unique:voucher_main,voucher_code',
-            'product_code_reference' => 'nullable|exists:product,product_code',
-            'expiry_date' => 'nullable|date_format:Y-m-d|after:today',
-
+            'expire_date' => 'nullable|date_format:Y-m-d|after:today',
             'value' => 'required|integer',
+            'serial' => 'required|string|unique:voucher_main,serial',
 
-            'serviceID' => 'required|string',
-            'business_unit' => 'required|string',
-            'serial_number' => 'required|string|unique:voucher_main,serial_number',
+            'product_code' => 'nullable|exists:product,product_code',
+            'product_id' => 'nullable|exists:product,product_id',
 
             'IMEI' => 'required|string',
             'SIMNarrative' => 'required|string',
+            'PCN' => 'required|string',
             'SIMNo' => 'required|string',
+            'PUK' => 'required|unique|string',
             'IMSI' => 'required|string',
-            'PUK' => 'required|string',
+            
+            'service_reference' => 'required|string',
+            'business_unit' => 'required|string',
+
+            'batch_id' => 'required|exists:batch_order,batch_id',
         ]);
 
         $voucher = VoucherModel::create([
-            'voucher_code' => $request->voucher_code,
-            'product_code_reference' => $request->product_code_reference,
-            'expiry_date' => $request->expiry_date,
-
+            'expire_date' => $request->expire_date,
             'value' => $request->value,
-
-            'serviceID' => $request->serviceID,
-            'business_unit' => $request->business_unit,
-            'serial_number' => $request->serial_number,
-
+            'serial' => $request->serial,
+        
+            'product_code' => $request->product_code,
+            'product_id' => $request->product_id,
+        
             'IMEI' => $request->IMEI,
             'SIMNarrative' => $request->SIMNarrative,
+            'PCN' => $request->PCN,
             'SIMNo' => $request->SIMNo,
-            'IMSI' => $request->IMSI,
             'PUK' => $request->PUK,
-
-            'created_by' => 1
+            'IMSI' => $request->IMSI,
+            
+            'service_reference' => $request->service_reference,
+            'business_unit' => $request->business_unit,
+            
+            'batch_id' => $request->batch_id,
+            'created_by' => "user"
         ]);
 
         $history = new VoucherHistory();
@@ -227,9 +232,9 @@ class VoucherController extends Controller
     }
 
 
-    public function editVoucher($voucherCode, Request $request)
+    public function editVoucher($serial, Request $request)
     {
-        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
+        $voucher = VoucherModel::where('serial', $serial)->first();
 
         if (!$voucher) {
             return response([
@@ -239,34 +244,48 @@ class VoucherController extends Controller
         }
 
         $request->validate([
-            'product_code_reference' => 'nullable|exists:product,product_code',
-            'expiry_date' => 'nullable|date_format:Y-m-d|after:today',
+            'expire_date' => 'nullable|date_format:Y-m-d|after:today',
             'value' => 'required|integer',
-            'serviceID' => 'required|string',
-            'business_unit' => 'required|string',
-            'serial_number' => 'required|string|unique:voucher_main,serial_number,' . $voucher->id,
+            // 'serial' => 'required|string|unique:voucher_main,serial',
+
+            'product_code' => 'nullable|exists:product,product_code,',
+            'product_id' => 'nullable|exists:product,product_id',
+
             'IMEI' => 'required|string',
             'SIMNarrative' => 'required|string',
+            'PCN' => 'required|string',
             'SIMNo' => 'required|string',
+            'PUK' => 'required|unique:voucher_main,PUK,'.$voucher->id,
             'IMSI' => 'required|string',
-            'PUK' => 'required|string',
+            
+            'service_reference' => 'required|string',
+            'business_unit' => 'required|string',
+            
+            'batch_id' => 'required|exists:batch_order,batch_id',
         ]);
 
         $voucher_old = clone $voucher;
 
         $voucher->update([
-            'product_code_reference' => $request->product_code_reference,
-            'expiry_date' => $request->expiry_date,
+            'expire_date' => $request->expire_date,
             'value' => $request->value,
-            'serviceID' => $request->serviceID,
-            'business_unit' => $request->business_unit,
-            'serial_number' => $request->serial_number,
+            // 'serial' => $request->serial,
+        
+            'product_code' => $request->product_code,
+            'product_id' => $request->product_id,
+        
             'IMEI' => $request->IMEI,
             'SIMNarrative' => $request->SIMNarrative,
+            'PCN' => $request->PCN,
             'SIMNo' => $request->SIMNo,
-            'IMSI' => $request->IMSI,
             'PUK' => $request->PUK,
-            'created_by' => 1 
+            'IMSI' => $request->IMSI,
+            
+            'service_reference' => $request->service_reference,
+            'business_unit' => $request->business_unit,
+            
+            'batch_id' => $request->batch_id,
+            'updated_by' => "user"
         ]);
 
         $voucher->refresh();
@@ -288,10 +307,10 @@ class VoucherController extends Controller
     }
 
     
-    public function setVoucherActive($voucherCode)
+    public function setVoucherActive($serial)
     {
-        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
-        $voucher_old = VoucherModel::where('voucher_code', $voucherCode)->get();
+        $voucher = VoucherModel::where('serial', $serial)->first();
+        $voucher_old = VoucherModel::where('serial', $serial)->get();
 
         if (!$voucher) {
             return response([
@@ -325,10 +344,10 @@ class VoucherController extends Controller
         ], 201);
     }
 
-    public function setVoucherInactive($voucherCode)
+    public function setVoucherInactive($serial)
     {
-        $voucher = VoucherModel::where('voucher_code', $voucherCode)->first();
-        $voucher_old = VoucherModel::where('voucher_code', $voucherCode)->get();
+        $voucher = VoucherModel::where('serial', $serial)->first();
+        $voucher_old = VoucherModel::where('serial', $serial)->get();
 
         if (!$voucher) {
             return response([
