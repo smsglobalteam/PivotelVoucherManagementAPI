@@ -17,8 +17,8 @@ return new class extends Migration
             $table->bigInteger('product_id');
             $table->integer('batch_count');
 
-            $table->bigInteger('created_by')->unsigned();
-            $table->bigInteger('update_by')->unsigned();
+            $table->string('created_by');
+            $table->string('update_by');
             $table->timestamps();
         });
 

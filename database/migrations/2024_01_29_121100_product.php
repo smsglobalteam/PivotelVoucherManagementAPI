@@ -19,8 +19,8 @@ return new class extends Migration
 
             $table->string('supplier');
 
-            $table->bigInteger('created_by')->unsigned();
-            $table->bigInteger('update_by')->unsigned();
+            $table->string('created_by');
+            $table->string('update_by');
             $table->timestamps();
         });
     }
