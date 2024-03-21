@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\BatchOrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SoapVoucherController;
 use App\Http\Controllers\VoucherActivationController;
@@ -61,7 +62,12 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::put('/product/{id}', [ProductController::class, 'editProductByID']);
     Route::delete('/product/{id}', [ProductController::class, 'deleteProductByID']);
 
-    
+    //Product API
+    Route::get('/batchOrder', [BatchOrderController::class, 'getAllBatchOrder']);
+    Route::post('/batchOrder', [BatchOrderController::class, 'createBatchOrder']);
+    Route::get('/batchOrder/{batch_id}', [BatchOrderController::class, 'getBatchOrderByVoucherID']);
+    Route::put('/batchOrder/{batch_id}', [BatchOrderController::class, 'editBatchOrderByID']);
+    Route::delete('/batchOrder/{batch_id}', [BatchOrderController::class, 'deleteBatchOrderByID']);
 
     //Web Service API
     Route::get('/service', [WebServiceController::class, 'getAllApplication']);
