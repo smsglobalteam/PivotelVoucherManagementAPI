@@ -108,7 +108,7 @@ class VoucherController extends Controller
             'SIMNarrative' => 'required|string',
             'PCN' => 'required|string',
             'SIMNo' => 'required|string',
-            'PUK' => 'required|unique|string',
+            'PUK' => 'required|unique:voucher_main,PUK',
             'IMSI' => 'required|string',
             
             'service_reference' => 'required|string',
