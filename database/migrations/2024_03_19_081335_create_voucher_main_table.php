@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('voucher_main', function (Blueprint $table) {
-            $table->bigInteger('id')->unsigned();
+            $table->id();
     
             $table->date('expire_date')->nullable();
             $table->integer('value');
+            $table->date('deplete_date')->nullable();
             
             $table->string('serial')->unique();
 

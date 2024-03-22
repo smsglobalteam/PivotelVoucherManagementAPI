@@ -158,13 +158,14 @@ class BatchOrderController extends Controller
         $history = new VoucherHistory();
         $history->user_id = "user";
         $history->transaction = "Created batch order";
-        $history->voucher_new_data = json_encode($voucher);
+        $history->voucher_new_data = json_encode($vouchers);
         $history->save();
 
         return response([
-            'message' => "Product created successfully",
+            'message' => "Batch order created successfully",
             'return_code' => '0',
-            'results' => $batchOrder
+            'results' => $batchOrder,
+            'vouchers' => $vouchers,
         ], 201);
     }
 

@@ -319,6 +319,13 @@ class VoucherController extends Controller
             ], 404);
         }
 
+        if ($voucher->deplete_date != null) {
+            return response([
+                'message' => "Can not activate a depleted voucher",
+                'return_code' => '-204',
+            ], 404);
+        }
+
         if ($voucher->available == true) {
             return response([
                 'message' => "Voucher is already active",
