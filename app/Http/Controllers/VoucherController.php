@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductModel;
 use App\Models\VoucherHistory;
 use App\Models\VoucherModel;
 use Carbon\Carbon;
@@ -58,6 +59,36 @@ class VoucherController extends Controller
 
         return response([
             'message' => "All voucher displayed successfully",
+            'return_code' => '0',
+            'results' => $voucher,
+        ], 200);
+    }
+
+    public function nextAvailable($product_id)
+    {
+        $product = ProductModel::where('product_id', $product_id)->first();
+
+        if (!$product) {
+            return response([
+                'message' => "The product ID you entered is not valid.",
+                'return_code' => '-101',
+            ], 404);
+        }
+
+        $voucher = VoucherModel::where('product_id', $product_id)
+            ->where('available', true)
+            ->where('deplete_date', null)
+            ->first();
+
+        if (!$voucher) {
+            return response([
+                'message' => "No available vouchers found",
+                'return_code' => '-210',
+            ], 200);
+        }
+
+        return response([
+            'message' => "Available voucher found",
             'return_code' => '0',
             'results' => $voucher,
         ], 200);
@@ -339,7 +370,7 @@ class VoucherController extends Controller
 
         $history = new VoucherHistory();
         $history->user_id = 1;
-        $history->transaction = "Activated voucher";
+        $history->transaction = "Voucher set as active";
         $history->voucher_old_data = json_encode($voucher_old);
         $history->voucher_new_data = json_encode($voucher_new);
         $history->save();
@@ -376,7 +407,7 @@ class VoucherController extends Controller
 
         $history = new VoucherHistory();
         $history->user_id = 1;
-        $history->transaction = "Activated voucher";
+        $history->transaction = "Voucher set as inactive";
         $history->voucher_old_data = json_encode($voucher_old);
         $history->voucher_new_data = json_encode($voucher_new);
         $history->save();

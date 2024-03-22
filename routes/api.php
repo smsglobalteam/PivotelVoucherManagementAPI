@@ -40,10 +40,10 @@ Route::group(['middleware' => 'token-validation'], function () {
     // Voucher API
     Route::get('/getAllVouchers', [VoucherController::class, 'getAllVouchers']);
     Route::get('/getVoucher/{serial}', [VoucherController::class, 'getVoucher']);
-    Route::get('/nextAvailable/{voucherCode}', [VoucherController::class, 'nextAvailable']);
+    Route::get('/nextAvailable/{product_id}', [VoucherController::class, 'nextAvailable']);
     Route::post('/createVoucher', [VoucherController::class, 'createVoucher']);
-    Route::post('/createVoucherCSV', [VoucherController::class, 'createVoucherCSV']);
-    Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
+    // Route::post('/createVoucherCSV', [VoucherController::class, 'createVoucherCSV']);
+    // Route::post('/voucher-file', [VoucherController::class, 'createNewVoucherCSV']);
     Route::put('/editVoucher/{serial}', [VoucherController::class, 'editVoucher']);
     Route::patch('/setActive/{serial}', [VoucherController::class, 'setVoucherActive']);
     Route::patch('/setInactive/{serial}', [VoucherController::class, 'setVoucherInactive']);
@@ -62,7 +62,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::put('/product/{id}', [ProductController::class, 'editProductByID']);
     Route::delete('/product/{id}', [ProductController::class, 'deleteProductByID']);
 
-    //Product API
+    //Batch order API
     Route::get('/batchOrder', [BatchOrderController::class, 'getAllBatchOrder']);
     Route::post('/batchOrder', [BatchOrderController::class, 'createBatchOrder']);
     Route::get('/batchOrder/{batch_id}', [BatchOrderController::class, 'getBatchOrderByVoucherID']);

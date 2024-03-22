@@ -74,8 +74,13 @@ class VoucherActivationController extends Controller
         $voucher->deplete_date = now();
         $voucher->available = false;
         $voucher->save();
-    
 
+        $history = new VoucherHistory();
+        $history->user_id = 1;
+        $history->transaction = "Consumed voucher";
+        $history->voucher_old_data = json_encode($voucher);
+        $history->save();
+    
         return response([
             'message' => "Voucer consumed successfully",
             'return_code' => '0',
