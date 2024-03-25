@@ -54,6 +54,8 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     //Voucher History API
     Route::get('/voucher-history', [VoucherHistoryController::class, 'getAllHistory']);
+    Route::get('/product-history', [VoucherHistoryController::class, 'getProductHistory']);
+    Route::get('/batch-order-history', [VoucherHistoryController::class, 'getBatchOrderHistory']);
 
     //Product API
     Route::get('/product', [ProductController::class, 'getAllProducts']);

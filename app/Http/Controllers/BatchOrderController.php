@@ -159,7 +159,7 @@ class BatchOrderController extends Controller
         $batchOrderHistory = new BatchOrderHistoryModel();
         $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
         $batchOrderHistory->transaction = "Created Batch Order";
-        $batchOrderHistory->batch_order_new_data = json_encode($vouchers);
+        $batchOrderHistory->batch_order_new_data = json_encode($batchOrder);
         $batchOrderHistory->save();
 
         $history = new VoucherHistory();

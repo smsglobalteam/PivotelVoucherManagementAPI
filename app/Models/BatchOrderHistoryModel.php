@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BatchOrderHistoryModel extends Model
 {
-    use HasFactory;
+    public $table = "batch_order_history";
+    // use HasFactory;
+    protected $guarded = [];
 }

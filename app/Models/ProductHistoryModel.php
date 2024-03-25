@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductHistoryModel extends Model
 {
-    use HasFactory;
+    public $table = "product_history";
+    // use HasFactory;
+    protected $guarded = [];
 }

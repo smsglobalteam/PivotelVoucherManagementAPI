@@ -56,7 +56,7 @@ class ProductController extends Controller
 
         $productHistory = new ProductHistoryModel();
         $productHistory->user_id = $request->attributes->get('preferred_username');
-        $productHistory->transaction = "Created voucher";
+        $productHistory->transaction = "Created Product";
         $productHistory->product_new_data = json_encode($product->toArray());
         $productHistory->save();
 
