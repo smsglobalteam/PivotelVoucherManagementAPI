@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BatchOrderHistoryModel;
 use App\Models\BatchOrderModel;
 use App\Models\ProductModel;
 use App\Models\VoucherHistory;
@@ -69,7 +70,7 @@ class BatchOrderController extends Controller
             'batch_id' => $request->batch_id,
             'product_id' => $request->product_id,
             'batch_count' => 0, // Temporary value
-            'created_by' => "user"
+            'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
 
@@ -144,7 +145,7 @@ class BatchOrderController extends Controller
                 'service_reference' => $serviceReference,
                 'business_unit' => $businessUnit,
                 'batch_id' => $request->batch_id,
-                'created_by' => 1,
+                'created_by' => $request->attributes->get('preferred_username'),
             ]);
 
             $vouchers[] = $voucher;
@@ -155,9 +156,15 @@ class BatchOrderController extends Controller
         $batchOrder->batch_count = $rowCount;
         $batchOrder->save();
 
+        $batchOrderHistory = new BatchOrderHistoryModel();
+        $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
+        $batchOrderHistory->transaction = "Created Batch Order";
+        $batchOrderHistory->batch_order_new_data = json_encode($vouchers);
+        $batchOrderHistory->save();
+
         $history = new VoucherHistory();
-        $history->user_id = "user";
-        $history->transaction = "Created batch order";
+        $history->user_id = $request->attributes->get('preferred_username');
+        $history->transaction = "Created Batch Order";
         $history->voucher_new_data = json_encode($vouchers);
         $history->save();
 
@@ -180,15 +187,27 @@ class BatchOrderController extends Controller
             ], 404);
         }
 
+        $batchOrder_old = clone $batchOrder;
+
         $request->validate([
             'product_id' => 'required|exists:product,product_id',
         ]);
 
-
         $batchOrder ->update([
             'product_id' => $request->product_id,
-            'updated_by' => "user"
+            'updated_by' => $request->attributes->get('preferred_username'),
         ]);
+
+        $batchOrder->refresh();
+
+        if ($batchOrder->wasChanged()) { 
+            $batchOrderHistory = new BatchOrderHistoryModel();
+            $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
+            $batchOrderHistory->transaction = "Edited Batch Order";
+            $batchOrderHistory->batch_order_old_data = json_encode($batchOrder_old->toArray());
+            $batchOrderHistory->batch_order_new_data = json_encode($batchOrder->toArray());
+            $batchOrderHistory->save();
+        }
 
         return response([
             'message' => "Batch order updated successfully",

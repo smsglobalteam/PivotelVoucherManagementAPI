@@ -22,9 +22,7 @@ class KeycloakValidationMiddleware
                 $authorizationHeader = $request->header('Authorization');
                 $tokenParts = explode(' ', $authorizationHeader);
 
-                // Assuming the format is "Bearer <token>", $tokenParts[1] should be your token.
-                $token = $tokenParts[1] ?? ''; // Using the null coalescing operator to avoid undefined index errors.
-
+                $token = $tokenParts[1] ?? ''; 
 
                 $response = Http::asForm()->post(env('AUTH_TOKEN_INTROSPECT'), [
                     'client_id' => env('AUTH_CONFIDENTIAL_CLIENT_ID'),
@@ -36,6 +34,13 @@ class KeycloakValidationMiddleware
 
                 if ($responseArray['active']) {
 
+                    // return response([
+                    //     'message' => 'Token is valid.',
+                    //     'username' => $responseArray['username'],
+                    // ], 200);
+
+                    $request->attributes->add(['preferred_username' => $responseArray['username']]);
+
                     return $next($request);
 
                 } else {
@@ -43,11 +48,17 @@ class KeycloakValidationMiddleware
                     return response([
                         'message' => 'Error. Token is not valid.',
                         'return_code' => '-2',
+                        // 'response' => $responseArray,
+                        // 'col1'=> $authorizationHeader,
+                        // 'col2'=> $tokenParts
                     ], $response->status());
 
                 }
             } else {
                 $request->attributes->add(['preferred_username' => 'auth-off']);
+                // return response([
+                //     'message' => 'Off.',
+                // ], 200);
                 return $next($request);
             }
         }

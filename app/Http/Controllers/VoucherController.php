@@ -136,12 +136,12 @@ class VoucherController extends Controller
             'business_unit' => $request->business_unit,
             
             'batch_id' => $request->batch_id,
-            'created_by' => "user"
+            'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
         $history = new VoucherHistory();
-        $history->user_id = 1;
-        $history->transaction = "Created voucher";
+        $history->user_id = $request->attributes->get('preferred_username');
+        $history->transaction = "Created Voucher";
         $history->voucher_new_data = json_encode($voucher);
         $history->save();
 
@@ -241,7 +241,7 @@ class VoucherController extends Controller
                 'SIMNo' => $SIMNo,
                 'IMSI' => $IMSI,
                 'PUK' => $PUK,
-                'created_by' => 1, // Assuming 'created_by' is still required. Adjust as necessary.
+                'created_by' => $request->attributes->get('preferred_username'),
             ]);
 
             $vouchers[] = $voucher;
@@ -250,7 +250,7 @@ class VoucherController extends Controller
         fclose($file);
 
         $history = new VoucherHistory();
-        $history->user_id = 1;
+        $history->user_id = $request->attributes->get('preferred_username');
         $history->transaction = "File created vouchers";
         $history->voucher_new_data = json_encode($vouchers);
         $history->save();
@@ -316,15 +316,15 @@ class VoucherController extends Controller
             'business_unit' => $request->business_unit,
             
             'batch_id' => $request->batch_id,
-            'updated_by' => "user"
+            'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 
         $voucher->refresh();
 
         if ($voucher->wasChanged()) { 
             $history = new VoucherHistory();
-            $history->user_id = 1;
-            $history->transaction = "Edited voucher";
+            $history->user_id = $request->attributes->get('preferred_username');
+            $history->transaction = "Edited Voucher";
             $history->voucher_old_data = json_encode($voucher_old->toArray());
             $history->voucher_new_data = json_encode($voucher->toArray());
             $history->save();
@@ -338,7 +338,7 @@ class VoucherController extends Controller
     }
 
     
-    public function setVoucherActive($serial)
+    public function setVoucherActive($serial, Request $request)
     {
         $voucher = VoucherModel::where('serial', $serial)->first();
         $voucher_old = VoucherModel::where('serial', $serial)->get();
@@ -369,7 +369,7 @@ class VoucherController extends Controller
         $voucher_new = array(json_decode($voucher, true));
 
         $history = new VoucherHistory();
-        $history->user_id = 1;
+        $history->user_id = $request->attributes->get('preferred_username');
         $history->transaction = "Voucher set as active";
         $history->voucher_old_data = json_encode($voucher_old);
         $history->voucher_new_data = json_encode($voucher_new);
@@ -382,7 +382,7 @@ class VoucherController extends Controller
         ], 201);
     }
 
-    public function setVoucherInactive($serial)
+    public function setVoucherInactive($serial, Request $request)
     {
         $voucher = VoucherModel::where('serial', $serial)->first();
         $voucher_old = VoucherModel::where('serial', $serial)->get();
@@ -406,7 +406,7 @@ class VoucherController extends Controller
         $voucher_new = array(json_decode($voucher, true));
 
         $history = new VoucherHistory();
-        $history->user_id = 1;
+        $history->user_id = $request->attributes->get('preferred_username');
         $history->transaction = "Voucher set as inactive";
         $history->voucher_old_data = json_encode($voucher_old);
         $history->voucher_new_data = json_encode($voucher_new);
@@ -441,7 +441,7 @@ class VoucherController extends Controller
         $vouchers_new = $vouchers;
 
         $history = new VoucherHistory();
-        $history->user_id = 1;
+        $history->user_id = $request->attributes->get('preferred_username');
         $history->transaction = "Batch deactivated vouchers";
         $history->voucher_old_data = json_encode($vouchers_old);
         $history->voucher_new_data = json_encode($vouchers_new);
