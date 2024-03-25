@@ -279,7 +279,7 @@ class VoucherController extends Controller
             'value' => 'required|integer',
             // 'serial' => 'required|string|unique:voucher_main,serial',
 
-            'product_code' => 'nullable|exists:product,product_code,',
+            'product_code' => 'nullable|exists:product,product_code',
             'product_id' => 'nullable|exists:product,product_id',
 
             'IMEI' => 'required|string',
