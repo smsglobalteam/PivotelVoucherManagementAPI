@@ -48,7 +48,7 @@ class BatchOrderController extends Controller
     public function createBatchOrder(Request $request)
     {
         $request->validate([
-            'batch_id' => 'required|integer|unique:batch_order,batch_id',
+            'batch_id' => 'required|string|unique:batch_order,batch_id',
             'batch_count' => 'required|integer|min:1',
             'product_id' => 'nullable|exists:product,product_id',
             'file' => 'required|file',
