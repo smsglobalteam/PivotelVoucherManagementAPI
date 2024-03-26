@@ -49,6 +49,7 @@ class BatchOrderController extends Controller
     {
         $request->validate([
             'batch_id' => 'required|integer|unique:batch_order,batch_id',
+            'batch_count' => 'required|integer|min:1',
             'product_id' => 'nullable|exists:product,product_id',
             'file' => 'required|file',
         ]);
@@ -65,14 +66,6 @@ class BatchOrderController extends Controller
                 'return_code' => '-205',
             ], 422);
         }
-
-        $batchOrder = BatchOrderModel::create([
-            'batch_id' => $request->batch_id,
-            'product_id' => $request->product_id,
-            'batch_count' => 0, // Temporary value
-            'created_by' => $request->attributes->get('preferred_username'),
-        ]);
-
 
         $filePath = $file->getPathname();
         $file = fopen($filePath, 'r');
@@ -95,7 +88,8 @@ class BatchOrderController extends Controller
             $IMSI = $row[8];
             $serviceReference = $row[9];
             $businessUnit = $row[10];
-
+        
+            // Perform validation for the current row
             $validator = Validator::make([
                 'expire_date' => $expireDate,
                 'value' => $value,
@@ -110,51 +104,74 @@ class BatchOrderController extends Controller
                 'business_unit' => $businessUnit,
             ], [
                 'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-                'value' => 'required|integer',
+                'value' => 'nullable|integer',
                 'serial' => 'required|string|unique:voucher_main,serial',
-                'IMEI' => 'required|string',
-                'SIMNarrative' => 'required|string',
-                'PCN' => 'required|string',
-                'SIMNo' => 'required|string',
+                'IMEI' => 'nullable|string',
+                'SIMNarrative' => 'nullable|string',
+                'PCN' => 'nullable|string',
+                'SIMNo' => 'nullable|string',
                 'PUK' => 'required|string|unique:voucher_main,PUK',
-                'IMSI' => 'required|string',
-                'service_reference' => 'required|string',
-                'business_unit' => 'required|string',
+                'IMSI' => 'nullable|string',
+                'service_reference' => 'nullable|string',
+                'business_unit' => 'nullable|string',
             ]);
-
+        
             if ($validator->fails()) {
-                return response([
-                    'message' => 'Invalid data in the file.',
-                    'return_code' => '-206',
-                    'errors' => $validator->errors(),
-                ], 422);
+                $errors["$rowCount"] = $validator->errors()->messages();
+                continue;
             }
-
-            $voucher = VoucherModel::create([
+        
+            // Store valid data in an array
+            $validData[] = [
                 'expire_date' => $expireDate,
                 'value' => $value,
                 'serial' => $serialNumber,
                 'IMEI' => $IMEI,
                 'SIMNarrative' => $SIMNarrative,
-                'product_code' => $product->product_code,
-                'product_id' => $product->product_id,
                 'PCN' => $PCN,
                 'SIMNo' => $SIMNo,
                 'PUK' => $PUK,
                 'IMSI' => $IMSI,
                 'service_reference' => $serviceReference,
                 'business_unit' => $businessUnit,
-                'batch_id' => $request->batch_id,
-                'created_by' => $request->attributes->get('preferred_username'),
-            ]);
+    
+                'product_code' => $product->product_code,
+                'product_id' => $product->product_id,
 
-            $vouchers[] = $voucher;
+            ];
         }
+        
 
         fclose($file);
 
-        $batchOrder->batch_count = $rowCount;
-        $batchOrder->save();
+        if (!empty ($errors)) {
+            return response([
+                'message' => 'Errors found in the uploaded file.',
+                'return_code' => '-206',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        if($request->batch_count != $rowCount) {
+            return response([
+                'message' => 'Batch count does not match the number of vouchers uploaded.',
+                'return_code' => '-211',
+            ], 422);
+        }
+
+        $batchOrder = BatchOrderModel::create([
+            'batch_id' => $request->batch_id,
+            'product_id' => $request->product_id,
+            'batch_count' => $rowCount,
+            'created_by' => $request->attributes->get('preferred_username'),
+        ]);
+
+        $vouchers = [];
+        foreach ($validData as $data) {
+            $data['batch_id'] = $batchOrder->batch_id; 
+            $voucher = VoucherModel::create($data);
+            $vouchers[] = $voucher;
+        }    
 
         $batchOrderHistory = new BatchOrderHistoryModel();
         $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
@@ -193,14 +210,14 @@ class BatchOrderController extends Controller
             'product_id' => 'required|exists:product,product_id',
         ]);
 
-        $batchOrder ->update([
+        $batchOrder->update([
             'product_id' => $request->product_id,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 
         $batchOrder->refresh();
 
-        if ($batchOrder->wasChanged()) { 
+        if ($batchOrder->wasChanged()) {
             $batchOrderHistory = new BatchOrderHistoryModel();
             $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
             $batchOrderHistory->transaction = "Edited Batch Order";

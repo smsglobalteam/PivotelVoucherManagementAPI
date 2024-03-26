@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('batch_order', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('batch_id')->unique();
+            $table->string('batch_id')->unique();
             $table->bigInteger('product_id');
             $table->integer('batch_count');
 

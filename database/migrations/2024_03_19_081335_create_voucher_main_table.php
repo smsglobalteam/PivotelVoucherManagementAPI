@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
     
             $table->date('expire_date')->nullable();
-            $table->integer('value');
+            $table->integer('value')->nullable();
             $table->date('deplete_date')->nullable();
             
             $table->string('serial')->unique();
@@ -23,19 +23,19 @@ return new class extends Migration
             $table->string('product_code')->nullable();
             $table->bigInteger('product_id')->nullable();
 
-            $table->string('IMEI');
-            $table->string('SIMNarrative');
-            $table->string('PCN');
-            $table->string('SIMNo');
+            $table->string('IMEI')->nullable();
+            $table->string('SIMNarrative')->nullable();
+            $table->string('PCN')->nullable();
+            $table->string('SIMNo')->nullable();
             $table->string('PUK')->unique();
-            $table->string('IMSI');
+            $table->string('IMSI')->nullable();
             
             $table->boolean('available')->default(true);
 
-            $table->string('service_reference');
-            $table->string('business_unit');
+            $table->string('service_reference')->nullable();
+            $table->string('business_unit')->nullable();
 
-            $table->bigInteger('batch_id');
+            $table->string('batch_id');
            
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
