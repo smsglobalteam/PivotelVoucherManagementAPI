@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BatchOrderModel;
 use App\Models\ProductModel;
 use App\Models\VoucherHistory;
 use App\Models\VoucherModel;
@@ -98,21 +99,21 @@ class VoucherController extends Controller
     {
         $request->validate([
             'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-            'value' => 'required|integer',
+            'value' => 'nullable|integer',
             'serial' => 'required|string|unique:voucher_main,serial',
 
             'product_code' => 'nullable|exists:product,product_code',
             'product_id' => 'nullable|exists:product,product_id',
 
-            'IMEI' => 'required|string',
-            'SIMNarrative' => 'required|string',
-            'PCN' => 'required|string',
-            'SIMNo' => 'required|string',
+            'IMEI' => 'nullable|string',
+            'SIMNarrative' => 'nullable|string',
+            'PCN' => 'nullable|string',
+            'SIMNo' => 'nullable|string',
             'PUK' => 'required|unique:voucher_main,PUK',
-            'IMSI' => 'required|string',
+            'IMSI' => 'nullable|string',
             
-            'service_reference' => 'required|string',
-            'business_unit' => 'required|string',
+            'service_reference' => 'nullable|string',
+            'business_unit' => 'nullable|string',
 
             'batch_id' => 'required|exists:batch_order,batch_id',
         ]);
@@ -138,6 +139,10 @@ class VoucherController extends Controller
             'batch_id' => $request->batch_id,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
+
+        $batchOrder = BatchOrderModel::where('batch_id', $request->batch_id)->first();
+        $batchOrder->batch_count = $batchOrder->batch_count + 1;
+        $batchOrder->save();
 
         $history = new VoucherHistory();
         $history->user_id = $request->attributes->get('preferred_username');
