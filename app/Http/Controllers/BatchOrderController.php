@@ -134,20 +134,20 @@ class BatchOrderController extends Controller
 
             fclose($file);
 
-            if (!empty ($errors)) {
-                return response([
-                    'message' => 'Errors found in the uploaded file.',
-                    'return_code' => '-206',
-                    'errors' => $errors,
-                ], 422);
-            }
-
             if (!empty ($duplicates)) {
                 // Handle duplicates. For example, you can return an error message with details.
                 return response([
                     'message' => 'Duplicate entries found.',
                     'return_code' => '-212',
                     'errors' => $duplicates,
+                ], 422);
+            }
+
+            if (!empty ($errors)) {
+                return response([
+                    'message' => 'Errors found in the uploaded file.',
+                    'return_code' => '-206',
+                    'errors' => $errors,
                 ], 422);
             }
 
@@ -294,20 +294,20 @@ class BatchOrderController extends Controller
 
             fclose($file);
 
-            if (!empty ($errors)) {
-                return response([
-                    'message' => 'Errors found in the uploaded file.',
-                    'return_code' => '-206',
-                    'errors' => $errors,
-                ], 422);
-            }
-
             if (!empty ($duplicates)) {
                 // Handle duplicates. For example, you can return an error message with details.
                 return response([
                     'message' => 'Duplicate entries found.',
                     'return_code' => '-212',
                     'errors' => $duplicates,
+                ], 422);
+            }
+
+            if (!empty ($errors)) {
+                return response([
+                    'message' => 'Errors found in the uploaded file.',
+                    'return_code' => '-206',
+                    'errors' => $errors,
                 ], 422);
             }
 
