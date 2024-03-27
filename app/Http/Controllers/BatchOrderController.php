@@ -70,50 +70,27 @@ class BatchOrderController extends Controller
         $filePath = $file->getPathname();
         $file = fopen($filePath, 'r');
 
-        fgetcsv($file);
+        // fgetcsv($file);
 
         $vouchers = [];
         $rowCount = 0;
 
         while (($row = fgetcsv($file)) !== false) {
+            if (!isset($row[0]) || !isset($row[1])) {
+                // Optionally log the row for review or handle the missing data appropriately
+                continue; // Skip this row or handle it as needed
+            }
             $rowCount++;
-            $expireDate = $row[0];
-            $value = $row[1];
-            $serialNumber = $row[2];
-            $IMEI = $row[3];
-            $SIMNarrative = $row[4];
-            $PCN = $row[5];
-            $SIMNo = $row[6];
-            $PUK = $row[7];
-            $IMSI = $row[8];
-            $serviceReference = $row[9];
-            $businessUnit = $row[10];
-        
-            // Perform validation for the current row
+            $serialNumber = $row[0];
+            $PUK = $row[1];
+
             $validator = Validator::make([
-                'expire_date' => $expireDate,
-                'value' => $value,
                 'serial' => $serialNumber,
-                'IMEI' => $IMEI,
-                'SIMNarrative' => $SIMNarrative,
-                'PCN' => $PCN,
-                'SIMNo' => $SIMNo,
                 'PUK' => $PUK,
-                'IMSI' => $IMSI,
-                'service_reference' => $serviceReference,
-                'business_unit' => $businessUnit,
+
             ], [
-                'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-                'value' => 'nullable|integer',
                 'serial' => 'required|string|unique:voucher_main,serial',
-                'IMEI' => 'nullable|string',
-                'SIMNarrative' => 'nullable|string',
-                'PCN' => 'nullable|string',
-                'SIMNo' => 'nullable|string',
                 'PUK' => 'required|string|unique:voucher_main,PUK',
-                'IMSI' => 'nullable|string',
-                'service_reference' => 'nullable|string',
-                'business_unit' => 'nullable|string',
             ]);
         
             if ($validator->fails()) {
@@ -123,18 +100,9 @@ class BatchOrderController extends Controller
         
             // Store valid data in an array
             $validData[] = [
-                'expire_date' => $expireDate,
-                'value' => $value,
                 'serial' => $serialNumber,
-                'IMEI' => $IMEI,
-                'SIMNarrative' => $SIMNarrative,
-                'PCN' => $PCN,
-                'SIMNo' => $SIMNo,
                 'PUK' => $PUK,
-                'IMSI' => $IMSI,
-                'service_reference' => $serviceReference,
-                'business_unit' => $businessUnit,
-    
+
                 'product_code' => $product->product_code,
                 'product_id' => $product->product_id,
 
@@ -167,11 +135,19 @@ class BatchOrderController extends Controller
         ]);
 
         $vouchers = [];
-        foreach ($validData as $data) {
-            $data['batch_id'] = $batchOrder->batch_id; 
+        foreach ($validData as &$data) {
+            if (!isset($data['value']) || $data['value'] === '') {
+                $data['value'] = 0;
+            }
+        
+            if (!isset($data['expire_date']) || $data['expire_date'] === '') {
+                $data['expire_date'] = null; 
+            }
+        
+            $data['batch_id'] = $batchOrder->batch_id;
             $voucher = VoucherModel::create($data);
             $vouchers[] = $voucher;
-        }    
+        }        
 
         $batchOrderHistory = new BatchOrderHistoryModel();
         $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
