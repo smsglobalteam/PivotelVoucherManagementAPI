@@ -67,6 +67,9 @@ Route::group(['middleware' => 'token-validation'], function () {
     //Batch order API
     Route::get('/batchOrder', [BatchOrderController::class, 'getAllBatchOrder']);
     Route::post('/batchOrder', [BatchOrderController::class, 'createBatchOrder']);
+
+    Route::post('/testReq', [BatchOrderController::class, 'testReq']);
+
     Route::get('/batchOrder/{batch_id}', [BatchOrderController::class, 'getBatchOrderByVoucherID']);
     Route::put('/batchOrder/{batch_id}', [BatchOrderController::class, 'editBatchOrderByID']);
     Route::delete('/batchOrder/{batch_id}', [BatchOrderController::class, 'deleteBatchOrderByID']);

@@ -45,6 +45,97 @@ class BatchOrderController extends Controller
         ], 200);
     }
 
+    private function transformCSVData($csvContent)
+    {
+        $transformedContent = [];
+        // Define the header for the new CSV format
+        $header = [
+            'expire_date',
+            'value',
+            'serial',
+            'IMEI',
+            'SIMNarrative',
+            'PCN',
+            'SIMNo',
+            'PUK',
+            'IMSI',
+            'service_reference',
+            'business_unit'
+        ];
+
+        // Add the header as the first row of the new content
+        $transformedContent[] = $header;
+
+        // Loop through each row of the original CSV content
+        foreach ($csvContent as $row) {
+            // Create a new row for the destination format with default/null values
+            $newRow = array_fill(0, count($header), null);
+
+            // Check and assign the first column to the 'serial' column (index 2)
+            $newRow[2] = isset($row[0]) ? $row[0] : null;
+
+            // Check and assign the second column to the 'PUK' column (index 7)
+            $newRow[7] = isset($row[1]) ? $row[1] : null;
+
+            // Add the new row to the transformed content
+            $transformedContent[] = $newRow;
+        }
+
+        return $transformedContent;
+    }
+
+
+
+    public function testReq(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+        ]);
+
+        $file = $request->file('file');
+
+        $extension = $file->getClientOriginalExtension();
+        if ($extension !== 'csv') {
+            return response([
+                'message' => 'Invalid file format. Only CSV files are supported.',
+                'return_code' => '-205',
+            ], 422);
+        }
+
+        $filePath = $file->getPathname();
+        $fileResource = fopen($filePath, 'r');
+
+        $firstRow = fgetcsv($fileResource);
+        $isPivotelFormat = count($firstRow) == 2;
+        $csvContent = [];
+
+        if ($isPivotelFormat) {
+
+            rewind($fileResource);
+
+            while (($row = fgetcsv($fileResource)) !== FALSE) {
+                $csvContent[] = $row;
+            }
+            fclose($fileResource);
+
+            // Transform the CSV data
+            $csvContent = $this->transformCSVData($csvContent);
+        } else {
+            rewind($fileResource);
+            while (($row = fgetcsv($fileResource)) !== FALSE) {
+                $csvContent[] = $row;
+            }
+            fclose($fileResource);
+        }
+
+        return response([
+            'message' => 'CSV content',
+            'filePath' => $filePath,
+            'csvContent' => $csvContent,
+        ], 200);
+    }
+
+
     public function createBatchOrder(Request $request)
     {
         $request->validate([
@@ -68,298 +159,177 @@ class BatchOrderController extends Controller
         }
 
         $filePath = $file->getPathname();
-        $file = fopen($filePath, 'r');
+        $fileResource = fopen($filePath, 'r');
 
-        $firstRow = fgetcsv($file);
-        $isVoucher3Format = count($firstRow) > 2;
+        $csvContent = [];
+        while (($row = fgetcsv($fileResource)) !== false) {
+            $csvContent[] = $row;
+        }
+        fclose($fileResource); // Close the file resource as it's no longer needed
 
-        //Reset pointer
-        rewind($file);
-
-        if (!$isVoucher3Format) {
-            $vouchers = [];
-            $rowCount = 0;
-
-            while (($row = fgetcsv($file)) !== false) {
-                if (!isset ($row[0]) || !isset ($row[1])) {
-
-                    continue; // Skip this row 
-                }
-                $rowCount++;
-                $serialNumber = $row[0];
-                $PUK = $row[1];
-
-                // Construct unique keys for fields that need to be unique
-                $serialKey = 'serial_' . $serialNumber;
-                $pukKey = 'PUK_' . $PUK;
-
-                // Check for duplicates and add error messages
-                if (isset ($uniqueCheck[$serialKey])) {
-                    $errors[$rowCount]['serial'][] = "The serial number is a duplicate.";
-                } else {
-                    $uniqueCheck[$serialKey] = $rowCount;
-                }
-
-                if (isset ($uniqueCheck[$pukKey])) {
-                    $errors[$rowCount]['PUK'][] = "The p u k is a duplicate.";
-                } else {
-                    $uniqueCheck[$pukKey] = $rowCount;
-                }
-
-                $validator = Validator::make([
-                    'serial' => $serialNumber,
-                    'PUK' => $PUK,
-
-                ], [
-                    'serial' => 'required|string|unique:voucher_main,serial',
-                    'PUK' => 'required|string|unique:voucher_main,PUK',
-                ]);
-
-                if ($validator->fails()) {
-                    $errors["$rowCount"] = $validator->errors()->messages();
-                    continue;
-                }
-
-                // Store valid data in an array
-                $validData[] = [
-                    'serial' => $serialNumber,
-                    'PUK' => $PUK,
-
-                    'product_code' => $product->product_code,
-                    'product_id' => $product->product_id,
-
-                ];
-            }
-
-
-            fclose($file);
-
-            if (!empty ($duplicates)) {
-                // Handle duplicates. For example, you can return an error message with details.
-                return response([
-                    'message' => 'Duplicate entries found.',
-                    'return_code' => '-212',
-                    'errors' => $duplicates,
-                ], 422);
-            }
-
-            if (!empty ($errors)) {
-                return response([
-                    'message' => 'Errors found in the uploaded file.',
-                    'return_code' => '-206',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            if ($request->batch_count != $rowCount) {
-                return response([
-                    'message' => 'Batch count does not match the number of vouchers uploaded.',
-                    'return_code' => '-211',
-                ], 422);
-            }
-
-            $batchOrder = BatchOrderModel::create([
-                'batch_id' => $request->batch_id,
-                'product_id' => $request->product_id,
-                'batch_count' => $rowCount,
-                'created_by' => $request->attributes->get('preferred_username'),
-            ]);
-
-            $vouchers = [];
-            foreach ($validData as &$data) {
-                if (!isset ($data['value']) || $data['value'] === '') {
-                    $data['value'] = 0;
-                }
-
-                if (!isset ($data['expire_date']) || $data['expire_date'] === '') {
-                    $data['expire_date'] = null;
-                }
-
-                $data['batch_id'] = $batchOrder->batch_id;
-                $voucher = VoucherModel::create($data);
-                $vouchers[] = $voucher;
-            }
-
-            $batchOrderHistory = new BatchOrderHistoryModel();
-            $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
-            $batchOrderHistory->transaction = "Created Batch Order";
-            $batchOrderHistory->batch_order_new_data = json_encode($batchOrder);
-            $batchOrderHistory->save();
-
-            $history = new VoucherHistory();
-            $history->user_id = $request->attributes->get('preferred_username');
-            $history->transaction = "Created Batch Order";
-            $history->voucher_new_data = json_encode($vouchers);
-            $history->save();
-
-            return response([
-                'message' => "Batch order created successfully",
-                'return_code' => '0',
-                'results' => $batchOrder,
-                'vouchers' => $vouchers,
-            ], 201);
-
+        $isPivotelFormat = count($csvContent[0]) == 2;
+        if ($isPivotelFormat) {
+            $transformedContent = $this->transformCSVData($csvContent);
         } else {
-            fgetcsv($file);
-
-            $vouchers = [];
-            $duplicates = [];
-            $uniqueCheck = [];
-            $rowCount = 0;
-
-            while (($row = fgetcsv($file)) !== false) {
-                $rowCount++;
-                $expireDate = $row[0];
-                $value = $row[1];
-                $serialNumber = $row[2];
-                $IMEI = $row[3];
-                $SIMNarrative = $row[4];
-                $PCN = $row[5];
-                $SIMNo = $row[6];
-                $PUK = $row[7];
-                $IMSI = $row[8];
-                $serviceReference = $row[9];
-                $businessUnit = $row[10];
-
-                // Construct unique keys for fields that need to be unique
-                $serialKey = 'serial_' . $serialNumber;
-                $pukKey = 'PUK_' . $PUK;
-
-                // Check for duplicates and add error messages
-                if (isset ($uniqueCheck[$serialKey])) {
-                    $errors[$rowCount]['serial'][] = "The serial number is a duplicate.";
-                } else {
-                    $uniqueCheck[$serialKey] = $rowCount;
-                }
-
-                if (isset ($uniqueCheck[$pukKey])) {
-                    $errors[$rowCount]['PUK'][] = "The p u k is a duplicate.";
-                } else {
-                    $uniqueCheck[$pukKey] = $rowCount;
-                }
-
-
-                // Perform validation for the current row
-                $validator = Validator::make([
-                    'serial' => $serialNumber,
-                    'PUK' => $PUK,
-                    'value' => $value,
-                    'expire_date' => $expireDate,
-                    'IMEI' => $IMEI,
-                    'SIMNarrative' => $SIMNarrative,
-                    'PCN' => $PCN,
-                    'SIMNo' => $SIMNo,
-                    'IMSI' => $IMSI,
-                    'service_reference' => $serviceReference,
-                    'business_unit' => $businessUnit,
-                ], [
-                    'serial' => 'required|string|unique:voucher_main,serial',
-                    'PUK' => 'required|string|unique:voucher_main,PUK',
-                    'value' => 'nullable|integer',
-                    'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-                    'IMEI' => 'nullable|string',
-                    'SIMNarrative' => 'nullable|string',
-                    'PCN' => 'nullable|string',
-                    'SIMNo' => 'nullable|string',
-                    'IMSI' => 'nullable|string',
-                    'service_reference' => 'nullable|string',
-                    'business_unit' => 'nullable|string',
-                ]);
-
-                if ($validator->fails()) {
-                    $errors["$rowCount"] = $validator->errors()->messages();
-                    continue;
-                }
-
-                // Store valid data in an array
-                $validData[] = [
-                    'serial' => $serialNumber,
-                    'PUK' => $PUK,
-                    'value' => $value,
-                    'expire_date' => $expireDate,
-                    'IMEI' => $IMEI,
-                    'SIMNarrative' => $SIMNarrative,
-                    'PCN' => $PCN,
-                    'SIMNo' => $SIMNo,
-                    'IMSI' => $IMSI,
-                    'service_reference' => $serviceReference,
-                    'business_unit' => $businessUnit,
-
-                    'product_code' => $product->product_code,
-                    'product_id' => $product->product_id,
-
-                ];
-            }
-
-
-            fclose($file);
-
-            if (!empty ($duplicates)) {
-                // Handle duplicates. For example, you can return an error message with details.
-                return response([
-                    'message' => 'Duplicate entries found.',
-                    'return_code' => '-212',
-                    'errors' => $duplicates,
-                ], 422);
-            }
-
-            if (!empty ($errors)) {
-                return response([
-                    'message' => 'Errors found in the uploaded file.',
-                    'return_code' => '-206',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            if ($request->batch_count != $rowCount) {
-                return response([
-                    'message' => 'Batch count does not match the number of vouchers uploaded.',
-                    'return_code' => '-211',
-                ], 422);
-            }
-
-            $batchOrder = BatchOrderModel::create([
-                'batch_id' => $request->batch_id,
-                'product_id' => $request->product_id,
-                'batch_count' => $rowCount,
-                'created_by' => $request->attributes->get('preferred_username'),
-            ]);
-
-            $vouchers = [];
-            foreach ($validData as &$data) {
-                if (!isset ($data['value']) || $data['value'] === '') {
-                    $data['value'] = 0;
-                }
-
-                if (!isset ($data['expire_date']) || $data['expire_date'] === '') {
-                    $data['expire_date'] = null;
-                }
-
-                $data['batch_id'] = $batchOrder->batch_id;
-                $voucher = VoucherModel::create($data);
-                $vouchers[] = $voucher;
-            }
-
-            $batchOrderHistory = new BatchOrderHistoryModel();
-            $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
-            $batchOrderHistory->transaction = "Created Batch Order";
-            $batchOrderHistory->batch_order_new_data = json_encode($batchOrder);
-            $batchOrderHistory->save();
-
-            $history = new VoucherHistory();
-            $history->user_id = $request->attributes->get('preferred_username');
-            $history->transaction = "Created Batch Order";
-            $history->voucher_new_data = json_encode($vouchers);
-            $history->save();
-
-            return response([
-                'message' => "Batch order created successfully",
-                'return_code' => '0',
-                'results' => $batchOrder,
-                'vouchers' => $vouchers,
-            ], 201);
+            $transformedContent = $csvContent;
         }
 
+        $vouchers = [];
+        $duplicates = [];
+        $uniqueCheck = [];
+        $rowCount = 0;
+
+        foreach ($transformedContent as $index => $row) {
+            if ($index === 0) {
+                continue;
+            }
+            $rowCount++;
+            $expireDate = $row[0];
+            $value = $row[1];
+            $serialNumber = $row[2];
+            $IMEI = $row[3];
+            $SIMNarrative = $row[4];
+            $PCN = $row[5];
+            $SIMNo = $row[6];
+            $PUK = $row[7];
+            $IMSI = $row[8];
+            $serviceReference = $row[9];
+            $businessUnit = $row[10];
+
+            // Construct unique keys for fields that need to be unique
+            $serialKey = 'serial_' . $serialNumber;
+            $pukKey = 'PUK_' . $PUK;
+
+            // Check for duplicates and add error messages
+            if (isset($uniqueCheck[$serialKey])) {
+                $errors[$rowCount]['serial'][] = "The serial number is a duplicate.";
+            } else {
+                $uniqueCheck[$serialKey] = $rowCount;
+            }
+
+            if (isset($uniqueCheck[$pukKey])) {
+                $errors[$rowCount]['PUK'][] = "The p u k is a duplicate.";
+            } else {
+                $uniqueCheck[$pukKey] = $rowCount;
+            }
+
+
+            // Perform validation for the current row
+            $validator = Validator::make([
+                'serial' => $serialNumber,
+                'PUK' => $PUK,
+                'value' => $value,
+                'expire_date' => $expireDate,
+                'IMEI' => $IMEI,
+                'SIMNarrative' => $SIMNarrative,
+                'PCN' => $PCN,
+                'SIMNo' => $SIMNo,
+                'IMSI' => $IMSI,
+                'service_reference' => $serviceReference,
+                'business_unit' => $businessUnit,
+            ], [
+                'serial' => 'required|string|unique:voucher_main,serial',
+                'PUK' => 'required|string|unique:voucher_main,PUK',
+                'value' => 'nullable|integer',
+                'expire_date' => 'nullable|date_format:Y-m-d|after:today',
+                'IMEI' => 'nullable|string',
+                'SIMNarrative' => 'nullable|string',
+                'PCN' => 'nullable|string',
+                'SIMNo' => 'nullable|string',
+                'IMSI' => 'nullable|string',
+                'service_reference' => 'nullable|string',
+                'business_unit' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                $errors["$rowCount"] = $validator->errors()->messages();
+                continue;
+            }
+
+            // Store valid data in an array
+            $validData[] = [
+                'serial' => $serialNumber,
+                'PUK' => $PUK,
+                'value' => $value,
+                'expire_date' => $expireDate,
+                'IMEI' => $IMEI,
+                'SIMNarrative' => $SIMNarrative,
+                'PCN' => $PCN,
+                'SIMNo' => $SIMNo,
+                'IMSI' => $IMSI,
+                'service_reference' => $serviceReference,
+                'business_unit' => $businessUnit,
+
+                'product_code' => $product->product_code,
+                'product_id' => $product->product_id,
+
+            ];
+        }
+
+        if (!empty($duplicates)) {
+            // Handle duplicates. For example, you can return an error message with details.
+            return response([
+                'message' => 'Duplicate entries found.',
+                'return_code' => '-212',
+                'errors' => $duplicates,
+            ], 422);
+        }
+
+        if (!empty($errors)) {
+            return response([
+                'message' => 'Errors found in the uploaded file.',
+                'return_code' => '-206',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        if ($request->batch_count != $rowCount) {
+            return response([
+                'message' => 'Batch count does not match the number of vouchers uploaded.',
+                'return_code' => '-211',
+            ], 422);
+        }
+
+        $batchOrder = BatchOrderModel::create([
+            'batch_id' => $request->batch_id,
+            'product_id' => $request->product_id,
+            'batch_count' => $rowCount,
+            'created_by' => $request->attributes->get('preferred_username'),
+        ]);
+
+        $vouchers = [];
+        foreach ($validData as &$data) {
+            if (!isset($data['value']) || $data['value'] === '') {
+                $data['value'] = 0;
+            }
+
+            if (!isset($data['expire_date']) || $data['expire_date'] === '') {
+                $data['expire_date'] = null;
+            }
+
+            $data['batch_id'] = $batchOrder->batch_id;
+            $voucher = VoucherModel::create($data);
+            $vouchers[] = $voucher;
+        }
+
+        $batchOrderHistory = new BatchOrderHistoryModel();
+        $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
+        $batchOrderHistory->transaction = "Created Batch Order";
+        $batchOrderHistory->batch_order_new_data = json_encode($batchOrder);
+        $batchOrderHistory->save();
+
+        $history = new VoucherHistory();
+        $history->user_id = $request->attributes->get('preferred_username');
+        $history->transaction = "Created Batch Order";
+        $history->voucher_new_data = json_encode($vouchers);
+        $history->save();
+
+        return response([
+            'message' => "Batch order created successfully",
+            'return_code' => '0',
+            'results' => $batchOrder,
+            'vouchers' => $vouchers,
+        ], 201);
     }
 
     public function editBatchOrderByID($id, Request $request)
