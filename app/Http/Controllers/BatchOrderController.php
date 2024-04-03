@@ -63,7 +63,6 @@ class BatchOrderController extends Controller
             'business_unit'
         ];
 
-        // Add the header as the first row of the new content
         $transformedContent[] = $header;
 
         // Loop through each row of the original CSV content
@@ -138,26 +137,36 @@ class BatchOrderController extends Controller
 
     public function createBatchOrder(Request $request)
     {
-        $request->validate([
-            'batch_id' => 'required|string|unique:batch_order,batch_id',
-            'batch_count' => 'required|integer|min:1',
-            'product_id' => 'nullable|exists:product,product_id',
-            'file' => 'required|file',
-        ]);
+        $validationErrors = [];
+        $errors = [];
+        $validData = [];
+
+        try {
+            $request->validate([
+                'batch_id' => 'required|string|unique:batch_order,batch_id',
+                'batch_count' => 'required|integer|min:1',
+                'product_id' => 'nullable|exists:product,product_id',
+                'file' => 'required|file|mimes:csv,txt',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Get validation errors
+            $validationErrors = $e->errors();
+
+            foreach ($validationErrors as $field => $messages) {
+                if (!isset($errors[$field])) {
+                    $errors[$field] = [];
+                }
+
+                foreach ($messages as $message) {
+                    $errors[$field][] = $message;
+                }
+            }
+        }
 
         $product = ProductModel::where('product_id', $request->product_id)
             ->first();
 
         $file = $request->file('file');
-
-        $extension = $file->getClientOriginalExtension();
-        if ($extension !== 'csv') {
-            return response([
-                'message' => 'Invalid file format. Only CSV files are supported.',
-                'return_code' => '-205',
-            ], 422);
-        }
-
         $filePath = $file->getPathname();
         $fileResource = fopen($filePath, 'r');
 
@@ -165,7 +174,7 @@ class BatchOrderController extends Controller
         while (($row = fgetcsv($fileResource)) !== false) {
             $csvContent[] = $row;
         }
-        fclose($fileResource); // Close the file resource as it's no longer needed
+        fclose($fileResource);
 
         $isPivotelFormat = count($csvContent[0]) == 2;
         if ($isPivotelFormat) {
@@ -178,11 +187,15 @@ class BatchOrderController extends Controller
         $duplicates = [];
         $uniqueCheck = [];
         $rowCount = 0;
+        $serialArray = [];
+        $PUKArray = [];
+        $customErrors = [];
 
         foreach ($transformedContent as $index => $row) {
             if ($index === 0) {
                 continue;
             }
+
             $rowCount++;
             $expireDate = $row[0];
             $value = $row[1];
@@ -197,18 +210,24 @@ class BatchOrderController extends Controller
             $businessUnit = $row[10];
 
             // Construct unique keys for fields that need to be unique
-            $serialKey = 'serial_' . $serialNumber;
-            $pukKey = 'PUK_' . $PUK;
+            $serialKey = $serialNumber;
+            $pukKey = $PUK;
+
+            $serialArray[] = $serialNumber;
+            $PUKArray[] = $PUK;
+
+            $csv['serial'] = $serialArray;
+            $csv['PUK'] = $PUKArray;
 
             // Check for duplicates and add error messages
             if (isset($uniqueCheck[$serialKey])) {
-                $errors[$rowCount]['serial'][] = "The serial number is a duplicate.";
+                $errors['rows'][$rowCount]['serial'][] = "The serial number is a duplicate.";
             } else {
                 $uniqueCheck[$serialKey] = $rowCount;
             }
 
             if (isset($uniqueCheck[$pukKey])) {
-                $errors[$rowCount]['PUK'][] = "The p u k is a duplicate.";
+                $errors['rows'][$rowCount]['PUK'][] = "The p u k is a duplicate.";
             } else {
                 $uniqueCheck[$pukKey] = $rowCount;
             }
@@ -242,7 +261,7 @@ class BatchOrderController extends Controller
             ]);
 
             if ($validator->fails()) {
-                $errors["$rowCount"] = $validator->errors()->messages();
+                $errors['rows']["$rowCount"] = $validator->errors()->messages();
                 continue;
             }
 
@@ -266,13 +285,32 @@ class BatchOrderController extends Controller
             ];
         }
 
-        if (!empty($duplicates)) {
-            // Handle duplicates. For example, you can return an error message with details.
-            return response([
-                'message' => 'Duplicate entries found.',
-                'return_code' => '-212',
-                'errors' => $duplicates,
-            ], 422);
+        if ($request->batch_count != $rowCount) {
+            $customErrors['batch_count'][] = "Batch count does not match the number of vouchers uploaded.";
+        }
+
+        foreach ($customErrors as $key => $value) {
+            if (!isset($errors[$key])) {
+                $errors[$key] = $value;
+            } else {
+                foreach ($value as $errorMsg) {
+                    if (!in_array($errorMsg, $errors[$key])) {
+                        $errors[$key][] = $errorMsg;
+                    }
+                }
+            }
+        }
+        
+        foreach ($validationErrors as $key => $value) {
+            if (!isset($errors[$key])) {
+                $errors[$key] = $value;
+            } else {
+                foreach ($value as $errorMsg) {
+                    if (!in_array($errorMsg, $errors[$key])) {
+                        $errors[$key][] = $errorMsg;
+                    }
+                }
+            }
         }
 
         if (!empty($errors)) {
@@ -280,13 +318,8 @@ class BatchOrderController extends Controller
                 'message' => 'Errors found in the uploaded file.',
                 'return_code' => '-206',
                 'errors' => $errors,
-            ], 422);
-        }
-
-        if ($request->batch_count != $rowCount) {
-            return response([
-                'message' => 'Batch count does not match the number of vouchers uploaded.',
-                'return_code' => '-211',
+                // 'rows' => $rows,
+                'csv' => $csv,
             ], 422);
         }
 
