@@ -40,7 +40,7 @@ class ProductController extends Controller
     public function createNewProduct(Request $request)
     {
         $request->validate([
-            'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code  ',
+            'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
             'product_id' => 'required|integer|unique:product,product_id',
             'product_name' => 'required|unique:product,product_name',
             'supplier' => 'required',
