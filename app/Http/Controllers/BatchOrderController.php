@@ -145,7 +145,7 @@ class BatchOrderController extends Controller
             $request->validate([
                 'batch_id' => 'required|string|unique:batch_order,batch_id',
                 'batch_count' => 'required|integer|min:1',
-                'product_id' => 'nullable|exists:product,product_id',
+                'product_id' => 'required|exists:product,product_id',
                 'file' => 'required|file|mimes:csv,txt',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -165,6 +165,12 @@ class BatchOrderController extends Controller
 
         $product = ProductModel::where('product_id', $request->product_id)
             ->first();
+
+            if ($product === null) {
+                $product = new \stdClass();
+                $product->product_code = null;
+                $product->product_id = null;
+            }
 
         $file = $request->file('file');
         $filePath = $file->getPathname();
