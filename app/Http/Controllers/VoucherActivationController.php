@@ -33,35 +33,27 @@ class VoucherActivationController extends Controller
             return response([
                 'message' => "This voucher has already been consumed.",
                 'return_code' => '-204',
-            ], 404);
+            ], 401);
         }
 
-        if ($voucher->expire_date < date('Y-m-d')) {
+        if ($voucher->expire_date && $voucher->expire_date < date('Y-m-d')) {
             return response([
                 'message' => "Voucher has expired.",
                 'return_code' => '-203',
-            ], 404);
+            ], 401);
         }
 
         if ($voucher->available == false) {
             return response([
                 'message' => "Voucher is not active.",
                 'return_code' => '-202',
-            ], 404);
+            ], 401);
         }
 
         $mismatches = [];
 
         if ($voucher->product_id != $request->product_id) {
             $mismatches[] = "Product ID does not match the voucher's product.";
-        }
-    
-        if ($voucher->business_unit != $request->business_unit) {
-            $mismatches[] = "Business unit does not match the voucher's business unit.";
-        }
-    
-        if ($voucher->service_reference != $request->service_reference) {
-            $mismatches[] = "Service reference does not match the voucher's service reference.";
         }
     
         if (!empty($mismatches)) {
@@ -73,6 +65,8 @@ class VoucherActivationController extends Controller
 
         $voucher->deplete_date = now();
         $voucher->available = false;
+        $voucher->service_reference = $request->service_reference;
+        $voucher->business_unit = $request->business_unit;
         $voucher->save();
 
         $history = new VoucherHistory();

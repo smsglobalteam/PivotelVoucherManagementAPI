@@ -215,6 +215,10 @@ class BatchOrderController extends Controller
             $serviceReference = $row[9];
             $businessUnit = $row[10];
 
+            // Record every appearance of serials and PUKs
+            $appearanceDetails['serial'][$serialNumber][] = $rowCount;
+            $appearanceDetails['PUK'][$PUK][] = $rowCount;
+
             // Construct unique keys for fields that need to be unique
             $serialKey = $serialNumber;
             $pukKey = $PUK;
@@ -228,16 +232,25 @@ class BatchOrderController extends Controller
             // Check for duplicates and add error messages
             if (isset($uniqueCheck[$serialKey])) {
                 $errors['rows'][$rowCount]['serial'][] = "The serial number is a duplicate.";
+                // Track the row where the duplicate was found
+                if (!isset($duplicateDetails['serial'][$serialNumber])) {
+                    $duplicateDetails['serial'][$serialNumber] = [];
+                }
+                $duplicateDetails['serial'][$serialNumber][] = $index + 1; // Adjust index to match row number
             } else {
                 $uniqueCheck[$serialKey] = $rowCount;
             }
-
+        
             if (isset($uniqueCheck[$pukKey])) {
-                $errors['rows'][$rowCount]['PUK'][] = "The p u k is a duplicate.";
+                $errors['rows'][$rowCount]['PUK'][] = "The PUK is a duplicate.";
+                // Track the row where the duplicate was found
+                if (!isset($duplicateDetails['PUK'][$PUK])) {
+                    $duplicateDetails['PUK'][$PUK] = [];
+                }
+                $duplicateDetails['PUK'][$PUK][] = $index + 1; // Adjust index to match row number
             } else {
                 $uniqueCheck[$pukKey] = $rowCount;
             }
-
 
             // Perform validation for the current row
             $validator = Validator::make([
@@ -319,12 +332,26 @@ class BatchOrderController extends Controller
             }
         }
 
+        $duplicatedRows = [];
+
+        foreach ($appearanceDetails as $type => $details) {
+            foreach ($details as $value => $rows) {
+                // Report as duplicate only if appears more than once
+                if (count($rows) > 1) {
+                    $duplicatedRows[] = [
+                        $type => $value,
+                        'rows' => $rows
+                    ];
+                }
+            }
+        }
+
         if (!empty($errors)) {
             return response([
                 'message' => 'Errors found in the uploaded file.',
                 'return_code' => '-206',
                 'errors' => $errors,
-                // 'rows' => $rows,
+                'duplicated_rows' => $duplicatedRows,
                 'csv' => $csv,
             ], 422);
         }
