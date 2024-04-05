@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BatchOrderController;
+use App\Http\Controllers\ErrorCodesController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SoapVoucherController;
 use App\Http\Controllers\VoucherActivationController;
@@ -63,6 +64,13 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/product/{id}', [ProductController::class, 'getProductByID']);
     Route::put('/product/{id}', [ProductController::class, 'editProductByID']);
     Route::delete('/product/{id}', [ProductController::class, 'deleteProductByID']);
+
+    //Error Codes API
+    Route::get('/errorCodes', [ErrorCodesController::class, 'getAllErorrCodes']);
+    Route::post('/errorCodes', [ErrorCodesController::class, 'createNewErrorCode']);
+    Route::get('/errorCodes/{id}', [ErrorCodesController::class, 'getErrorCodeByID']);
+    Route::put('/errorCodes/{id}', [ErrorCodesController::class, 'editErrorByCode']);
+    Route::delete('/errorCodes/{id}', [ErrorCodesController::class, 'deleteErrorCodeByID']);
 
     //Batch order API
     Route::get('/batchOrder', [BatchOrderController::class, 'getAllBatchOrder']);
