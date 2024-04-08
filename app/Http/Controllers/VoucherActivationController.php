@@ -14,15 +14,13 @@ class VoucherActivationController extends Controller
     {
         $request->validate([
             'serial' => 'required',
+            'PUK' => 'required',
             'product_id' => 'required',
             'business_unit' => 'required',
             'service_reference' => 'required',
         ]);
 
-        $voucher = VoucherModel::where('serial', $request->serial)
-            ->first();
-
-        $voucher_old = clone $voucher;
+        $voucher = VoucherModel::where('serial', $request->serial)->where('PUK', $request->PUK)->first();
 
         if (!$voucher) {
             return response([
@@ -30,6 +28,8 @@ class VoucherActivationController extends Controller
                 'return_code' => '-201',
             ], 404);
         }
+
+         $voucher_old = clone $voucher;
 
         if ($voucher->deplete_date != null) {
             return response([
@@ -80,7 +80,7 @@ class VoucherActivationController extends Controller
         $history->save();
     
         return response([
-            'message' => "Voucer consumed successfully",
+            'message' => "Voucher consumed successfully.",
             'return_code' => '0',
             'results' => $voucher,
         ], 200);
