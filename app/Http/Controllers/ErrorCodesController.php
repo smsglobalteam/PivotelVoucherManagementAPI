@@ -37,6 +37,31 @@ class ErrorCodesController extends Controller
         ], 200);
     }
 
+    public function getErrorMessages(Request $request)
+    {
+        $request->validate([
+            'error_codes' => 'nullable',
+        ]);
+
+        $errorCodesArray = explode(',', $request->error_codes);
+
+        $errorMessages = ErrorCodesModel::whereIn('error_code', $errorCodesArray)
+            ->get(['error_code', 'error_message']);
+
+        if ($errorMessages->isEmpty()) {
+            return response()->json([
+                'message' => "No error messages found for the provided codes.",
+                'results' => []
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => "Error codes processed successfully.",
+            'return_code' => '0',
+            'results' => $errorMessages
+        ], 200);
+    }
+
     public function createNewErrorCode(Request $request)
     {
         $request->validate([

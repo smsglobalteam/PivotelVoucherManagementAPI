@@ -71,6 +71,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/errorCodes/{id}', [ErrorCodesController::class, 'getErrorCodeByID']);
     Route::put('/errorCodes/{id}', [ErrorCodesController::class, 'editErrorByCode']);
     Route::delete('/errorCodes/{id}', [ErrorCodesController::class, 'deleteErrorCodeByID']);
+    Route::post('/errorMessages', [ErrorCodesController::class, 'getErrorMessages']);
 
     //Batch order API
     Route::get('/batchOrder', [BatchOrderController::class, 'getAllBatchOrder']);
