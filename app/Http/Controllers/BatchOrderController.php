@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BatchOrderHistoryModel;
 use App\Models\BatchOrderModel;
+use App\Models\HistoryLogsModel;
 use App\Models\ProductModel;
-use App\Models\VoucherHistory;
 use App\Models\VoucherModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -378,17 +377,20 @@ class BatchOrderController extends Controller
             $vouchers[] = $voucher;
         }
 
-        $batchOrderHistory = new BatchOrderHistoryModel();
-        $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
+        $batchOrderHistory = new HistoryLogsModel();
+        $batchOrderHistory->username = $request->attributes->get('preferred_username');
         $batchOrderHistory->transaction = "Created Batch Order";
-        $batchOrderHistory->batch_order_new_data = json_encode($batchOrder);
+        $batchOrderHistory->database_table = "batch_order";
+        $batchOrderHistory->new_data = json_encode($batchOrder);
         $batchOrderHistory->save();
 
-        $history = new VoucherHistory();
-        $history->user_id = $request->attributes->get('preferred_username');
-        $history->transaction = "Created Batch Order";
-        $history->voucher_new_data = json_encode($vouchers);
+        $history = new HistoryLogsModel();
+        $history->username = $request->attributes->get('preferred_username');
+        $history->transaction = "Created Batch Order Vouchers";
+        $history->database_table = "voucher_main";
+        $history->new_data = json_encode($vouchers);
         $history->save();
+
 
         return response([
             'message' => "Batch order created successfully",
@@ -423,11 +425,12 @@ class BatchOrderController extends Controller
         $batchOrder->refresh();
 
         if ($batchOrder->wasChanged()) {
-            $batchOrderHistory = new BatchOrderHistoryModel();
-            $batchOrderHistory->user_id = $request->attributes->get('preferred_username');
+            $batchOrderHistory = new HistoryLogsModel();
+            $batchOrderHistory->username = $request->attributes->get('preferred_username');
             $batchOrderHistory->transaction = "Edited Batch Order";
-            $batchOrderHistory->batch_order_old_data = json_encode($batchOrder_old->toArray());
-            $batchOrderHistory->batch_order_new_data = json_encode($batchOrder->toArray());
+            $batchOrderHistory->database_table = "batch_order";
+            $batchOrderHistory->old_data = json_encode($batchOrder_old->toArray());
+            $batchOrderHistory->new_data = json_encode($batchOrder->toArray());
             $batchOrderHistory->save();
         }
 

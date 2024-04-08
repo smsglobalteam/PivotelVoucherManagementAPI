@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BatchOrderHistoryModel extends Model
+class HistoryLogsModel extends Model
 {
-    public $table = "batch_order_history";
+    public $table = "history_logs";
     // use HasFactory;
     protected $guarded = [];
 }

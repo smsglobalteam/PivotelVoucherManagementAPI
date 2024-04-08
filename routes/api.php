@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BatchOrderController;
 use App\Http\Controllers\ErrorCodesController;
+use App\Http\Controllers\HistoryLogsController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SoapVoucherController;
 use App\Http\Controllers\VoucherActivationController;
@@ -54,9 +55,8 @@ Route::group(['middleware' => 'token-validation'], function () {
 
 
     //Voucher History API
-    Route::get('/voucher-history', [VoucherHistoryController::class, 'getAllHistory']);
-    Route::get('/product-history', [VoucherHistoryController::class, 'getProductHistory']);
-    Route::get('/batch-order-history', [VoucherHistoryController::class, 'getBatchOrderHistory']);
+    Route::get('/voucher-history', [HistoryLogsController::class, 'getAllHistory']);
+    Route::get('/voucher-histor{database_table}', [HistoryLogsController::class, 'getHistoryLogsByTable']);
 
     //Product API
     Route::get('/product', [ProductController::class, 'getAllProducts']);

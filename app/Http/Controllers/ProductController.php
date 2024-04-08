@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductHistoryModel;
+use App\Models\HistoryLogsModel;
 use App\Models\ProductModel;
 use Illuminate\Http\Request;
 
@@ -54,10 +54,11 @@ class ProductController extends Controller
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
-        $productHistory = new ProductHistoryModel();
-        $productHistory->user_id = $request->attributes->get('preferred_username');
+        $productHistory = new HistoryLogsModel();
+        $productHistory->username = $request->attributes->get('preferred_username');
         $productHistory->transaction = "Created Product";
-        $productHistory->product_new_data = json_encode($product->toArray());
+        $productHistory->database_table = "product";
+        $productHistory->new_data = json_encode($product->toArray());
         $productHistory->save();
 
         return response([
@@ -98,11 +99,12 @@ class ProductController extends Controller
         $product->refresh();
 
         if ($product->wasChanged()) { 
-            $productHistory = new ProductHistoryModel();
-            $productHistory->user_id = $request->attributes->get('preferred_username');
+            $productHistory = new HistoryLogsModel();
+            $productHistory->username = $request->attributes->get('preferred_username');
             $productHistory->transaction = "Edited Product";
-            $productHistory->product_old_data = json_encode($product_old->toArray());
-            $productHistory->product_new_data = json_encode($product->toArray());
+            $productHistory->database_table = "product";
+            $productHistory->old_data = json_encode($product_old->toArray());
+            $productHistory->new_data = json_encode($product->toArray());
             $productHistory->save();
         }
 

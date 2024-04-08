@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BatchOrderModel;
+use App\Models\HistoryLogsModel;
 use App\Models\ProductModel;
-use App\Models\VoucherHistory;
 use App\Models\VoucherModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -144,10 +144,11 @@ class VoucherController extends Controller
         $batchOrder->batch_count = $batchOrder->batch_count + 1;
         $batchOrder->save();
 
-        $history = new VoucherHistory();
-        $history->user_id = $request->attributes->get('preferred_username');
+        $history = new HistoryLogsModel();
+        $history->username = $request->attributes->get('preferred_username');
         $history->transaction = "Created Voucher";
-        $history->voucher_new_data = json_encode($voucher);
+        $history->database_table = "voucher_main";
+        $history->new_data = json_encode($voucher);
         $history->save();
 
         return response([
@@ -156,117 +157,6 @@ class VoucherController extends Controller
             'results' => $voucher
         ], 201);
     }
-
-    public function createVoucherCSV(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file',
-        ]);
-
-        $file = $request->file('file');
-
-        // Check the file extension
-        $extension = $file->getClientOriginalExtension();
-        if ($extension !== 'csv') {
-            return response([
-                'message' => 'Invalid file format. Only CSV files are supported.',
-                'return_code' => '-205',
-            ], 422);
-        }
-
-        $filePath = $file->getPathname();
-        $file = fopen($filePath, 'r');
-
-        // Skip the header row
-        fgetcsv($file);
-
-        $vouchers = [];
-
-        while (($row = fgetcsv($file)) !== false) {
-            $voucherCode = $row[0]; // Assuming the first column is 'voucher_code'
-            $productCodeReference = $row[1];
-            $expiryDate = $row[2];
-            $value = $row[3];
-            $serviceID = $row[4];
-            $businessUnit = $row[5];
-            $serialNumber = $row[6];
-            $IMEI = $row[7];
-            $SIMNarrative = $row[8];
-            $SIMNo = $row[9];
-            $IMSI = $row[10];
-            $PUK = $row[11];
-
-            // Validate the data
-            $validator = Validator::make([
-                'voucher_code' => $voucherCode,
-                'product_code_reference' => $productCodeReference,
-                'expiry_date' => $expiryDate,
-                'value' => $value,
-                'serviceID' => $serviceID,
-                'business_unit' => $businessUnit,
-                'serial_number' => $serialNumber,
-                'IMEI' => $IMEI,
-                'SIMNarrative' => $SIMNarrative,
-                'SIMNo' => $SIMNo,
-                'IMSI' => $IMSI,
-                'PUK' => $PUK,
-            ], [
-                'voucher_code' => 'required|unique:voucher_main,voucher_code',
-                'product_code_reference' => 'nullable|exists:product,product_code',
-                'expiry_date' => 'nullable|date_format:Y-m-d|after:today',
-                'value' => 'required|integer',
-                'serviceID' => 'required|string',
-                'business_unit' => 'required|string',
-                'serial_number' => 'required|string|unique:voucher_main,serial_number',
-                'IMEI' => 'required|string',
-                'SIMNarrative' => 'required|string',
-                'SIMNo' => 'required|string',
-                'IMSI' => 'required|string',
-                'PUK' => 'required|string',
-            ]);
-
-            if ($validator->fails()) {
-                return response([
-                    'message' => 'Invalid data in the file.',
-                    'return_code' => '-206',
-                    'errors' => $validator->errors(),
-                ], 422);
-            }
-
-            $voucher = VoucherModel::create([
-                'voucher_code' => $voucherCode,
-                'product_code_reference' => $productCodeReference,
-                'expiry_date' => $expiryDate,
-                'value' => $value,
-                'serviceID' => $serviceID,
-                'business_unit' => $businessUnit,
-                'serial_number' => $serialNumber,
-                'IMEI' => $IMEI,
-                'SIMNarrative' => $SIMNarrative,
-                'SIMNo' => $SIMNo,
-                'IMSI' => $IMSI,
-                'PUK' => $PUK,
-                'created_by' => $request->attributes->get('preferred_username'),
-            ]);
-
-            $vouchers[] = $voucher;
-        }
-
-        fclose($file);
-
-        $history = new VoucherHistory();
-        $history->user_id = $request->attributes->get('preferred_username');
-        $history->transaction = "File created vouchers";
-        $history->voucher_new_data = json_encode($vouchers);
-        $history->save();
-
-        return response([
-            'message' => 'Vouchers created successfully',
-            'return_code' => '0',
-            'results' => $vouchers,
-        ], 201);
-    }
-
 
     public function editVoucher($serial, Request $request)
     {
@@ -297,7 +187,7 @@ class VoucherController extends Controller
             'service_reference' => 'required|string',
             'business_unit' => 'required|string',
             
-            'batch_id' => 'required|exists:batch_order,batch_id',
+            // 'batch_id' => 'required|exists:batch_order,batch_id',
         ]);
 
         $voucher_old = clone $voucher;
@@ -320,18 +210,19 @@ class VoucherController extends Controller
             'service_reference' => $request->service_reference,
             'business_unit' => $request->business_unit,
             
-            'batch_id' => $request->batch_id,
+            // 'batch_id' => $request->batch_id,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 
         $voucher->refresh();
 
         if ($voucher->wasChanged()) { 
-            $history = new VoucherHistory();
-            $history->user_id = $request->attributes->get('preferred_username');
+            $history = new HistoryLogsModel();
+            $history->username = $request->attributes->get('preferred_username');
             $history->transaction = "Edited Voucher";
-            $history->voucher_old_data = json_encode($voucher_old->toArray());
-            $history->voucher_new_data = json_encode($voucher->toArray());
+            $history->database_table = "voucher_main";
+            $history->old_data = json_encode($voucher_old->toArray());
+            $history->new_data = json_encode($voucher->toArray());
             $history->save();
         }
 
@@ -373,11 +264,12 @@ class VoucherController extends Controller
         $voucher->save();
         $voucher_new = array(json_decode($voucher, true));
 
-        $history = new VoucherHistory();
-        $history->user_id = $request->attributes->get('preferred_username');
+        $history = new HistoryLogsModel();
+        $history->username = $request->attributes->get('preferred_username');
         $history->transaction = "Voucher set as active";
-        $history->voucher_old_data = json_encode($voucher_old);
-        $history->voucher_new_data = json_encode($voucher_new);
+        $history->database_table = "voucher_main";
+        $history->old_data = json_encode($voucher_old);
+        $history->new_data = json_encode($voucher_new);
         $history->save();
 
         return response([
@@ -410,11 +302,12 @@ class VoucherController extends Controller
         $voucher->save();
         $voucher_new = array(json_decode($voucher, true));
 
-        $history = new VoucherHistory();
-        $history->user_id = $request->attributes->get('preferred_username');
+        $history = new HistoryLogsModel();
+        $history->username = $request->attributes->get('preferred_username');
         $history->transaction = "Voucher set as inactive";
-        $history->voucher_old_data = json_encode($voucher_old);
-        $history->voucher_new_data = json_encode($voucher_new);
+        $history->database_table = "voucher_main";
+        $history->old_data = json_encode($voucher_old);
+        $history->new_data = json_encode($voucher_new);
         $history->save();
 
         return response([
@@ -445,11 +338,12 @@ class VoucherController extends Controller
         }
         $vouchers_new = $vouchers;
 
-        $history = new VoucherHistory();
-        $history->user_id = $request->attributes->get('preferred_username');
+        $history = new HistoryLogsModel();
+        $history->username = $request->attributes->get('preferred_username');
         $history->transaction = "Batch deactivated vouchers";
-        $history->voucher_old_data = json_encode($vouchers_old);
-        $history->voucher_new_data = json_encode($vouchers_new);
+        $history->database_table = "voucher_main";
+        $history->old_data = json_encode($vouchers_old);
+        $history->new_data = json_encode($vouchers_new);
         $history->save();
 
         return response()->json([

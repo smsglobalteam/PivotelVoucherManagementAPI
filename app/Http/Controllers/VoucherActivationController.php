@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VoucherHistory;
+use App\Models\HistoryLogsModel;
 use App\Models\VoucherMainModel;
 use App\Models\VoucherModel;
 use Illuminate\Http\Request;
@@ -21,6 +21,8 @@ class VoucherActivationController extends Controller
 
         $voucher = VoucherModel::where('serial', $request->serial)
             ->first();
+
+        $voucher_old = clone $voucher;
 
         if (!$voucher) {
             return response([
@@ -69,10 +71,12 @@ class VoucherActivationController extends Controller
         $voucher->business_unit = $request->business_unit;
         $voucher->save();
 
-        $history = new VoucherHistory();
-        $history->user_id = 1;
+        $history = new HistoryLogsModel();
+        $history->username = $request->attributes->get('preferred_username');
         $history->transaction = "Consumed voucher";
-        $history->voucher_old_data = json_encode($voucher);
+        $history->database_table = "voucher_main";
+        $history->old_data = json_encode($voucher_old);
+        $history->new_data = json_encode($voucher);
         $history->save();
     
         return response([
