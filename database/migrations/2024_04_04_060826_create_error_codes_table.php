@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('error_codes');
+        Schema::dropIfExists('error_codes_reference');
     }
 };

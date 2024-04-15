@@ -9,6 +9,9 @@ use App\Models\VoucherModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\ErrorCodesController;
+use App\Models\ErrorCodesModel;
+use Error;
 
 class BatchOrderController extends Controller
 {
@@ -134,11 +137,55 @@ class BatchOrderController extends Controller
     }
 
 
-    public function createBatchOrder(Request $request)
+    public function createBatchOrder(Request $request, ErrorCodesController $errorCodesController)
     {
-        $validationErrors = [];
+
+        //Get error message and code for duplicates
+        $errorCodeSerialDuplicate = "-6013"; // "The serial is a duplicate in the CSV."
+        $errorCodePUKDuplicate = "-6014"; // "The PUK is a duplicate in the CSV."
+
+        $errorFieldSerial = "serial";
+        $errorFieldPUK = "PUK";
+
+        $errorMessageSerialDuplicate = ErrorCodesModel::where('error_code', $errorCodeSerialDuplicate)->first();
+        $errorMessagePUKDuplicate = ErrorCodesModel::where('error_code', $errorCodePUKDuplicate)->first();
+
+        // Check if the error messages were found, assign default messages if not
+        if (!$errorMessageSerialDuplicate) {
+            $errorMessageSerialDuplicate = [
+                'error_code' => $errorCodeSerialDuplicate,
+                'error_message' => "The serial is a duplicate.",
+                'error_field' => $errorFieldSerial
+            ];
+        } else {
+            // Create custom response with only error_code and error_message
+            $errorMessageSerialDuplicate = [
+                'error_code' => $errorMessageSerialDuplicate->error_code,
+                'error_message' => $errorMessageSerialDuplicate->error_message,
+                'error_field' => $errorFieldSerial
+            ];
+        }
+
+        if (!$errorMessagePUKDuplicate) {
+            $errorMessagePUKDuplicate = [
+                'error_code' => $errorCodePUKDuplicate,
+                'error_message' => "The PUK is a duplicate.",
+                'error_field' => $errorFieldPUK
+            ];
+        } else {
+            // Create custom response with only error_code and error_message
+            $errorMessagePUKDuplicate = [
+                'error_code' => $errorMessagePUKDuplicate->error_code,
+                'error_message' => $errorMessagePUKDuplicate->error_message,
+                'error_field' => $errorFieldPUK
+            ];
+        }
+
+
+        $csvDuplicates = [];
         $errors = [];
         $validData = [];
+        $customErrors = []; // Array to collect custom error codes
 
         try {
             $request->validate([
@@ -148,28 +195,18 @@ class BatchOrderController extends Controller
                 'file' => 'required|file|mimes:csv,txt',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Get validation errors
-            $validationErrors = $e->errors();
-
-            foreach ($validationErrors as $field => $messages) {
-                if (!isset($errors[$field])) {
-                    $errors[$field] = [];
-                }
-
-                foreach ($messages as $message) {
-                    $errors[$field][] = $message;
-                }
-            }
+            // Map each validation error to a custom code
+            $customErrors = array_merge($customErrors, $errorCodesController->mapValidationErrorsToCustomCodes($e->validator));
         }
 
         $product = ProductModel::where('product_id', $request->product_id)
             ->first();
 
-            if ($product === null) {
-                $product = new \stdClass();
-                $product->product_code = null;
-                $product->product_id = null;
-            }
+        if ($product === null) {
+            $product = new \stdClass();
+            $product->product_code = null;
+            $product->product_id = null;
+        }
 
         $file = $request->file('file');
         $filePath = $file->getPathname();
@@ -194,7 +231,9 @@ class BatchOrderController extends Controller
         $rowCount = 0;
         $serialArray = [];
         $PUKArray = [];
-        $customErrors = [];
+        $appearanceDetails = []; // Ensure this is initialized
+        $duplicateDetails = []; // Ensure this is initialized
+
 
         foreach ($transformedContent as $index => $row) {
             if ($index === 0) {
@@ -230,7 +269,7 @@ class BatchOrderController extends Controller
 
             // Check for duplicates and add error messages
             if (isset($uniqueCheck[$serialKey])) {
-                $errors['rows'][$rowCount]['serial'][] = "The serial number is a duplicate.";
+                $csvDuplicates['rows'][$rowCount]['serial'] = $errorMessageSerialDuplicate;
                 // Track the row where the duplicate was found
                 if (!isset($duplicateDetails['serial'][$serialNumber])) {
                     $duplicateDetails['serial'][$serialNumber] = [];
@@ -239,9 +278,9 @@ class BatchOrderController extends Controller
             } else {
                 $uniqueCheck[$serialKey] = $rowCount;
             }
-        
+
             if (isset($uniqueCheck[$pukKey])) {
-                $errors['rows'][$rowCount]['PUK'][] = "The PUK is a duplicate.";
+                $csvDuplicates['rows'][$rowCount]['PUK'] = $errorMessagePUKDuplicate;
                 // Track the row where the duplicate was found
                 if (!isset($duplicateDetails['PUK'][$PUK])) {
                     $duplicateDetails['PUK'][$PUK] = [];
@@ -279,8 +318,8 @@ class BatchOrderController extends Controller
             ]);
 
             if ($validator->fails()) {
-                $errors['rows']["$rowCount"] = $validator->errors()->messages();
-                continue;
+                $customErrors = array_merge($customErrors, $errorCodesController->mapValidationErrorsToCustomCodes($validator));
+                continue; // Skip further processing for this row
             }
 
             // Store valid data in an array
@@ -303,33 +342,13 @@ class BatchOrderController extends Controller
             ];
         }
 
-        if ($request->batch_count != $rowCount) {
-            $customErrors['batch_count'][] = "Batch count does not match the number of vouchers uploaded.";
+        if ($request->batch_count != count($transformedContent)-1) {
+            $customErrors[] = [
+                "error_code" => "-6012",
+                "error_field" => "batch_count" // Assuming you want to specify which field the error relates to
+            ];
         }
 
-        foreach ($customErrors as $key => $value) {
-            if (!isset($errors[$key])) {
-                $errors[$key] = $value;
-            } else {
-                foreach ($value as $errorMsg) {
-                    if (!in_array($errorMsg, $errors[$key])) {
-                        $errors[$key][] = $errorMsg;
-                    }
-                }
-            }
-        }
-        
-        foreach ($validationErrors as $key => $value) {
-            if (!isset($errors[$key])) {
-                $errors[$key] = $value;
-            } else {
-                foreach ($value as $errorMsg) {
-                    if (!in_array($errorMsg, $errors[$key])) {
-                        $errors[$key][] = $errorMsg;
-                    }
-                }
-            }
-        }
 
         $duplicatedRows = [];
 
@@ -345,11 +364,14 @@ class BatchOrderController extends Controller
             }
         }
 
-        if (!empty($errors)) {
+        $errorMessages = $errorCodesController->getErrorMessagesFromCodes($customErrors);
+
+        if (!empty($errorMessages) || !empty($csvDuplicates)) {
             return response([
                 'message' => 'Errors found in the uploaded file.',
                 'return_code' => '-206',
-                'errors' => $errors,
+                'errors' => $errorMessages,
+                'csvDuplicates' => $csvDuplicates,
                 'duplicated_rows' => $duplicatedRows,
                 'csv' => $csv,
             ], 422);
@@ -400,7 +422,7 @@ class BatchOrderController extends Controller
         ], 201);
     }
 
-    public function editBatchOrderByID($id, Request $request)
+    public function editBatchOrderByID($id, Request $request,  ErrorCodesController $errorCodesController)
     {
         $batchOrder = BatchOrderModel::where('batch_id', $id)->first();
 
@@ -413,9 +435,22 @@ class BatchOrderController extends Controller
 
         $batchOrder_old = clone $batchOrder;
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:product,product_id',
         ]);
+
+        if ($validator->fails()) {
+            // Map validation errors to custom codes
+            $customErrorCodes = $errorCodesController->mapValidationErrorsToCustomCodes($validator);
+
+            // Fetch custom error messages from the database
+            $errorMessages = $errorCodesController->getErrorMessagesFromCodes($customErrorCodes);
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $errorMessages,
+            ], 422);
+        }
 
         $batchOrder->update([
             'product_id' => $request->product_id,

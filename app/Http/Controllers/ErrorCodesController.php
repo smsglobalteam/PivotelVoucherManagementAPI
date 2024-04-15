@@ -20,6 +20,7 @@ class ErrorCodesController extends Controller
         ], 200);
     }
 
+
     public function getErrorCodeByID($id)
     {
         $errorCodes = ErrorCodesModel::where('error_code', $id)->first();
@@ -148,5 +149,170 @@ class ErrorCodesController extends Controller
             'return_code' => '0',
             'results' => $errorCodesReference
         ], 200);
+    }
+
+    public function mapValidationErrorsToCustomCodes($validator)
+    {
+        $failedRules = $validator->failed();
+        $errorMappings = [];
+
+        foreach ($failedRules as $field => $rules) {
+            foreach (array_keys($rules) as $rule) {
+                // Directly determine the error code within the loop
+                $key = strtolower($field . '_' . $rule);
+                $errorCode = null;
+
+                switch ($key) {
+                    case 'product_code_required':
+                        $errorCode = '-5002';
+                        break;
+                    case 'product_code_regex':
+                        $errorCode = '-5003';
+                        break;
+                    case 'product_code_unique':
+                        $errorCode = '-5004';
+                        break;
+                    case 'product_id_required':
+                        $errorCode = '-5005';
+                        break;
+                    case 'product_id_integer':
+                        $errorCode = '-5006';
+                        break;
+                    case 'product_id_unique':
+                        $errorCode = '-5007';
+                        break;
+                    case 'product_name_required':
+                        $errorCode = '-5008';
+                        break;
+                    case 'product_name_unique':
+                        $errorCode = '-5009';
+                        break;
+                    case 'supplier_required':
+                        $errorCode = '-5010';
+                        break;
+
+                    case 'batch_id_required':
+                        $errorCode = '-6002';
+                        break;
+                    case 'batch_id_string':
+                        $errorCode = '-6003';
+                        break;
+                    case 'batch_id_unique':
+                        $errorCode = '-6004';
+                        break;
+                    case 'batch_count_required':
+                        $errorCode = '-6005';
+                        break;
+                    case 'batch_count_integer':
+                        $errorCode = '-6006';
+                        break;
+                    case 'batch_count_min':
+                        $errorCode = '-6007';
+                        break;
+                    case 'product_id_required':
+                        $errorCode = '-6008';
+                        break;
+                    case 'product_id_exists':
+                        $errorCode = '-6009';
+                        break;
+                    case 'file_required':
+                        $errorCode = '-6010';
+                        break;
+                    case 'file_mimes':
+                        $errorCode = '-6011';
+                        break;
+                    //-6012, -6013, -6014 are not present here as they are not validation rules but custom checks
+
+                        // Voucher processing errors
+                    case 'serial_required':
+                        $errorCode = '-7002';
+                        break;
+                    case 'serial_unique':
+                        $errorCode = '-7003';
+                        break;
+                    case 'puk_required':
+                        $errorCode = '-7004';
+                        break;
+                    case 'puk_unique':
+                        $errorCode = '-7005';
+                        break;
+                    case 'value_integer':
+                        $errorCode = '-7006';
+                        break;
+                    case 'expire_date_date_format':
+                        $errorCode = '-7007';
+                        break;
+                    case 'expire_date_after':
+                        $errorCode = '-7008';
+                        break;
+                    case 'imei_string':
+                        $errorCode = '-7009';
+                        break;
+                    case 'simnarrative_string':
+                        $errorCode = '-7010';
+                        break;
+                    case 'pcn_string':
+                        $errorCode = '-7011';
+                        break;
+                    case 'simno_string':
+                        $errorCode = '-7012';
+                        break;
+                    case 'imsi_string':
+                        $errorCode = '-7013';
+                        break;
+                    case 'service_reference_string':
+                        $errorCode = '-7014';
+                        break;
+                    case 'business_unit_string':
+                        $errorCode = '-7015';
+                        break;
+                        // Add other cases as needed
+                }
+
+                // Only add to the array if an error code was found
+                if ($errorCode !== null) {
+                    $errorMappings[] = [
+                        'error_code' => $errorCode,
+                        'error_field' => $field,
+                    ];
+                }
+            }
+        }
+
+        return $errorMappings;
+    }
+
+
+    public function getErrorMessagesFromCodes(array $errorMappings)
+    {
+        // Extract just the error codes for the database query
+        $errorCodes = array_column($errorMappings, 'error_code');
+
+        // Fetch error messages based on extracted codes
+        $errors = ErrorCodesModel::whereIn('error_code', $errorCodes)
+            ->get(['error_code', 'error_message']);
+
+        // Map back the error messages to their codes and include the column information
+        $result = collect($errorMappings)->map(function ($mapping) use ($errors) {
+            $error = $errors->firstWhere('error_code', $mapping['error_code']);
+
+            // Prepare the return structure with column information
+            if (!$error) {
+                // Return a default message if the error code is not recognized
+                return [
+                    'error_code' => $mapping['error_code'],
+                    'error_message' => $mapping['error_code'] == '-9999' ? 'An unrecognized error occurred.' : 'Error message not found for this code.',
+                    'error_field' => $mapping['error_field'],
+                ];
+            }
+
+            return [
+                'error_code' => $error->error_code,
+                'error_message' => $error->error_message,
+                'error_field' => $mapping['error_field'],
+            ];
+        })->toArray();
+
+        return $result;
     }
 }

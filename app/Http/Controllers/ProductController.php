@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ErrorCodesModel;
 use App\Models\HistoryLogsModel;
 use App\Models\ProductModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\ErrorCodesController;
 
 class ProductController extends Controller
 {
@@ -37,14 +40,27 @@ class ProductController extends Controller
         ], 200);
     }
 
-    public function createNewProduct(Request $request)
+    public function createNewProduct(Request $request, ErrorCodesController $errorCodesController)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
             'product_id' => 'required|integer|unique:product,product_id',
             'product_name' => 'required|unique:product,product_name',
             'supplier' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            // Map validation errors to custom codes
+            $customErrorCodes = $errorCodesController->mapValidationErrorsToCustomCodes($validator);
+
+            // Fetch custom error messages from the database
+            $errorMessages = $errorCodesController->getErrorMessagesFromCodes($customErrorCodes);
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $errorMessages,
+            ], 422);
+        }
 
         $product = ProductModel::create([
             'product_code' => $request->product_code,
@@ -68,7 +84,7 @@ class ProductController extends Controller
         ], 201);
     }
 
-    public function editProductByID($id, Request $request)
+    public function editProductByID($id, Request $request, ErrorCodesController $errorCodesController)
     {
         $product = ProductModel::where('product_code', $id)->first();
 
@@ -81,12 +97,25 @@ class ProductController extends Controller
 
         $product_old = clone $product;
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             // 'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
             // 'product_id' => 'required|integer|unique:product,product_id',
             'product_name' => 'required|unique:product,product_name,' . $product->id,
             'supplier' => 'required',
         ]);
+
+        if ($validator->fails()) {
+            // Map validation errors to custom codes
+            $customErrorCodes = $errorCodesController->mapValidationErrorsToCustomCodes($validator);
+
+            // Fetch custom error messages from the database
+            $errorMessages = $errorCodesController->getErrorMessagesFromCodes($customErrorCodes);
+
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $errorMessages,
+            ], 422);
+        }
 
         $product->update([
             // 'product_code' => $request->product_code,
@@ -98,7 +127,7 @@ class ProductController extends Controller
 
         $product->refresh();
 
-        if ($product->wasChanged()) { 
+        if ($product->wasChanged()) {
             $productHistory = new HistoryLogsModel();
             $productHistory->username = $request->attributes->get('preferred_username');
             $productHistory->transaction = "Edited Product";
