@@ -14,13 +14,13 @@ class VoucherActivationController extends Controller
     {
         $request->validate([
             'serial' => 'required',
-            'PUK' => 'required',
+            // 'PUK' => 'required',
             'product_id' => 'required',
             'business_unit' => 'required',
             'service_reference' => 'required',
         ]);
 
-        $voucher = VoucherModel::where('serial', $request->serial)->where('PUK', $request->PUK)->first();
+        $voucher = VoucherModel::where('serial', $request->serial)->first();
 
         if (!$voucher) {
             return response([
