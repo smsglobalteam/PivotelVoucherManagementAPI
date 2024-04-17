@@ -82,6 +82,15 @@ class BatchOrderController extends Controller
         return $transformedContent;
     }
 
+    function cleanDataArray(array $data): array
+    {
+        return array_filter($data, function ($row) {
+            // Check if all values in the row are null
+            return !empty(array_filter($row, function ($value) {
+                return !is_null($value);
+            }));
+        });
+    }
 
 
     public function testReq(Request $request)
@@ -165,11 +174,11 @@ class BatchOrderController extends Controller
         $product = ProductModel::where('product_id', $request->product_id)
             ->first();
 
-            if ($product === null) {
-                $product = new \stdClass();
-                $product->product_code = null;
-                $product->product_id = null;
-            }
+        if ($product === null) {
+            $product = new \stdClass();
+            $product->product_code = null;
+            $product->product_id = null;
+        }
 
         $file = $request->file('file');
         $filePath = $file->getPathname();
@@ -195,6 +204,9 @@ class BatchOrderController extends Controller
         $serialArray = [];
         $PUKArray = [];
         $customErrors = [];
+
+        //Clean NULL rows
+        $transformedContent = $this->cleanDataArray($transformedContent);
 
         foreach ($transformedContent as $index => $row) {
             if ($index === 0) {
@@ -239,7 +251,7 @@ class BatchOrderController extends Controller
             } else {
                 $uniqueCheck[$serialKey] = $rowCount;
             }
-        
+
             if (isset($uniqueCheck[$pukKey])) {
                 $errors['rows'][$rowCount]['PUK'][] = "The PUK is a duplicate.";
                 // Track the row where the duplicate was found
@@ -318,7 +330,7 @@ class BatchOrderController extends Controller
                 }
             }
         }
-        
+
         foreach ($validationErrors as $key => $value) {
             if (!isset($errors[$key])) {
                 $errors[$key] = $value;
