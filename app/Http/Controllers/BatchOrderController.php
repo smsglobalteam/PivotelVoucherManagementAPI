@@ -312,6 +312,8 @@ class BatchOrderController extends Controller
                 'product_code' => $product->product_code,
                 'product_id' => $product->product_id,
 
+                'created_by' => $request->attributes->get('preferred_username'),
+
             ];
         }
 
