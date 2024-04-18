@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('error_code')->unique();
             $table->string('error_message');
-            $table->string('error_descrpition')->nullable();
+            $table->string('error_description')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();
