@@ -68,19 +68,15 @@ class ErrorCodesController extends Controller
         $request->validate([
             'error_code' => 'required|integer|unique:error_codes_reference,error_code',
             'error_message' => 'required|string',
+            'error_description' => 'nullable|string',
         ]);
 
         $errorCodes = ErrorCodesModel::create([
             'error_code' => $request->error_code,
             'error_message' => $request->error_message,
+            'error_description' => $request->error_description,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
-
-        // $productHistory = new ProductHistoryModel();
-        // $productHistory->user_id = $request->attributes->get('preferred_username');
-        // $productHistory->transaction = "Created Error Code";
-        // $productHistory->product_new_data = json_encode($errorCodes->toArray());
-        // $productHistory->save();
 
         return response([
             'message' => "Error codes created successfully",
@@ -97,6 +93,7 @@ class ErrorCodesController extends Controller
             return response([
                 'message' => "Error code not found",
                 'return_code' => '-101',
+                
             ], 404);
         }
 
@@ -105,24 +102,17 @@ class ErrorCodesController extends Controller
         $request->validate([
             'error_code' => 'required|integer|unique:error_codes_reference,error_code,' . $errorCodesReference->id,
             'error_message' => 'required|string',
+            'error_description' => 'nullable|string',
         ]);
 
         $errorCodesReference->update([
             'error_code' => $request->error_code,
             'error_message' => $request->error_message,
+            'error_description' => $request->error_description,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 
         $errorCodesReference->refresh();
-
-        // if ($product->wasChanged()) { 
-        //     $productHistory = new ProductHistoryModel();
-        //     $productHistory->user_id = $request->attributes->get('preferred_username');
-        //     $productHistory->transaction = "Edited Error Code";
-        //     $productHistory->product_old_data = json_encode($product_old->toArray());
-        //     $productHistory->product_new_data = json_encode($product->toArray());
-        //     $productHistory->save();
-        // }
 
         return response([
             'message' => "Error code updated successfully",

@@ -102,8 +102,8 @@ class VoucherController extends Controller
             'value' => 'nullable|integer',
             'serial' => 'required|string|unique:voucher_main,serial',
 
-            'product_code' => 'nullable|exists:product,product_code',
-            'product_id' => 'nullable|exists:product,product_id',
+            'product_code' => 'required|exists:product,product_code',
+            'product_id' => 'required|exists:product,product_id',
 
             'IMEI' => 'nullable|string',
             'SIMNarrative' => 'nullable|string',
@@ -171,21 +171,21 @@ class VoucherController extends Controller
 
         $request->validate([
             'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-            'value' => 'required|integer',
+            'value' => 'nullable|integer',
             // 'serial' => 'required|string|unique:voucher_main,serial',
 
-            'product_code' => 'nullable|exists:product,product_code',
-            'product_id' => 'nullable|exists:product,product_id',
+            'product_code' => 'required|exists:product,product_code',
+            'product_id' => 'required|exists:product,product_id',
 
-            'IMEI' => 'required|string',
-            'SIMNarrative' => 'required|string',
-            'PCN' => 'required|string',
-            'SIMNo' => 'required|string',
-            'PUK' => 'required|unique:voucher_main,PUK,'.$voucher->id,
-            'IMSI' => 'required|string',
+            'IMEI' => 'nullable|string',
+            'SIMNarrative' => 'nullable|string',
+            'PCN' => 'nullable|string',
+            'SIMNo' => 'nullable|string',
+            'PUK' => 'nullable|unique:voucher_main,PUK,'.$voucher->id,
+            'IMSI' => 'nullable|string',
             
-            'service_reference' => 'required|string',
-            'business_unit' => 'required|string',
+            'service_reference' => 'nullable|string',
+            'business_unit' => 'nullable|string',
             
             // 'batch_id' => 'required|exists:batch_order,batch_id',
         ]);
