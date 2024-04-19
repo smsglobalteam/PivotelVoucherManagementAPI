@@ -15,6 +15,7 @@ class ErrorCodeReferenceSeeder extends Seeder
     public function run()
     {
         $errorCodes = [
+            //Product Errors
             ['error_code' => '-5001', 'error_message' => 'Product not found in the database.', 'error_description' => 'No record for the product in the database.'],
             ['error_code' => '-5002', 'error_message' => 'The Product Code is required.', 'error_description' => 'Missing product code in the data provided.'],
             ['error_code' => '-5003', 'error_message' => 'The Product Code can not have spaces.', 'error_description' => 'Product code contains invalid spaces.'],
@@ -26,6 +27,7 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-5009', 'error_message' => 'The Product Name must be unique.', 'error_description' => 'Duplicate product name entry detected.'],
             ['error_code' => '-5010', 'error_message' => 'The Supplier is required.', 'error_description' => 'Missing supplier information.'],
             
+            //Batch Order Errors
             ['error_code' => '-6002', 'error_message' => 'The batch ID is required.', 'error_description' => 'Missing batch ID in the request.'],
             ['error_code' => '-6003', 'error_message' => 'The batch ID must be a string.', 'error_description' => 'Batch ID must be alphanumeric and cannot contain special characters.'],
             ['error_code' => '-6004', 'error_message' => 'The batch ID must be unique.', 'error_description' => 'The batch ID provided already exists in the system.'],
@@ -40,6 +42,7 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-6013', 'error_message' => 'The serial is a duplicate in the CSV.', 'error_description' => 'Repeated serial number found in the uploaded CSV file.'],
             ['error_code' => '-6014', 'error_message' => 'The PUK is a duplicate in the CSV.', 'error_description' => 'Repeated PUK number detected in the file.'],
 
+            //Voucher Errors
             ['error_code' => '-7002', 'error_message' => 'The serial is required.', 'error_description' => 'Serial number must be provided for registration.'],
             ['error_code' => '-7003', 'error_message' => 'The serial must be unique.', 'error_description' => 'Each serial number in the system must be unique to avoid conflicts.'],
             ['error_code' => '-7004', 'error_message' => 'The PUK is required.', 'error_description' => 'PUK is necessary for SIM card activation.'],
@@ -54,17 +57,30 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-7013', 'error_message' => 'The IMSI must be a string.', 'error_description' => 'IMSI should consist of numeric characters only.'],
             ['error_code' => '-7014', 'error_message' => 'The service reference must be a string.', 'error_description' => 'Service reference should be textual.'],
             ['error_code' => '-7015', 'error_message' => 'The business unit must be a string.', 'error_description' => 'Business unit descriptions must be provided in text format.'],
+
+            //Voucher Activation
+            ['error_code' => '-7102', 'error_message' => 'Voucher under that serial not found.', 'error_description' => 'No matching serial for any voucher.'],
+            ['error_code' => '-7103', 'error_message' => 'This voucher has already been consumed.', 'error_description' => 'Voucher has been redeemed already.'],
+            ['error_code' => '-7104', 'error_message' => 'This voucher has already expired.', 'error_description' => 'Voucher is past its expiration date.'],
+            ['error_code' => '-7105', 'error_message' => 'This voucher is not active.', 'error_description' => 'Voucher is not currently active.'],
+            ['error_code' => '-7106', 'error_message' => 'Product ID does not match the voucher product.', 'error_description' => 'Mismatch between voucher and product ID.'],
         ];
 
         foreach ($errorCodes as $code) {
-            DB::table('error_codes_reference')->insert([
-                'error_code' => $code['error_code'],
-                'error_message' => $code['error_message'],
-                'error_description' => $code['error_description'],
-                'created_by' => 'System generated',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
+            // Check if the error code already exists
+            $exists = DB::table('error_codes_reference')->where('error_code', $code['error_code'])->exists();
+
+            // Insert the error code if it does not exist
+            if (!$exists) {
+                DB::table('error_codes_reference')->insert([
+                    'error_code' => $code['error_code'],
+                    'error_message' => $code['error_message'],
+                    'error_description' => $code['error_description'],
+                    'created_by' => 'System-generated',
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+            }
         }
     }
 }

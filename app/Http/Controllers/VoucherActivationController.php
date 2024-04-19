@@ -6,225 +6,202 @@ use App\Models\HistoryLogsModel;
 use App\Models\VoucherMainModel;
 use App\Models\VoucherModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\ErrorCodesController;
 
 class VoucherActivationController extends Controller
 {
     //
-    public function consumeVoucher(Request $request)
-    {
-        $request->validate([
-            'serial' => 'required',
-            // 'PUK' => 'required',
-            'product_id' => 'required',
-            'business_unit' => 'required',
-            'service_reference' => 'required',
-        ]);
+    public function consumeVoucher(Request $request, ErrorCodesController $errorCodesController)
+{
+    // Initialize error collections
+    $customErrorCodes = [];
+    $customErrors = [];
 
-        $voucher = VoucherModel::where('serial', $request->serial)->first();
+    // Validator setup
+    $validator = Validator::make($request->all(), [
+        'serial' => 'required',
+        'product_id' => 'required',
+        'business_unit' => 'required',
+        'service_reference' => 'required',
+        'IMEI' => 'nullable',
+        'SIMNarrative' => 'nullable',
+        'PCN' => 'nullable',
+        'SIMNo' => 'nullable',
+        'IMSI' => 'nullable',
+    ]);
 
-        if (!$voucher) {
-            return response([
-                'message' => "Voucher not found.",
-                'return_code' => '-201',
-            ], 404);
-        }
+    if ($validator->fails()) {
+        // Map validation errors to custom codes
+        $customErrorCodes = $errorCodesController->mapValidationErrorsToCustomCodes($validator);
+    }
 
-         $voucher_old = clone $voucher;
+    $voucher = VoucherModel::where('serial', $request->serial)->first();
+
+    if (!$voucher) {
+        $customErrors[] = [
+            "error_code" => "-7102",
+            "error_field" => "serial"
+        ];
+    } else {
+        // Clone voucher for history before modification
+        $voucher_old = clone $voucher;
 
         if ($voucher->deplete_date != null) {
-            return response([
-                'message' => "This voucher has already been consumed.",
-                'return_code' => '-204',
-            ], 401);
+            $customErrors[] = [
+                "error_code" => "-7103",
+                "error_field" => "deplete_date"
+            ];
         }
 
         if ($voucher->expire_date && $voucher->expire_date < date('Y-m-d')) {
-            return response([
-                'message' => "Voucher has expired.",
-                'return_code' => '-203',
-            ], 401);
+            $customErrors[] = [
+                "error_code" => "-7104",
+                "error_field" => "expire_date"
+            ];
         }
 
         if ($voucher->available == false) {
-            return response([
-                'message' => "Voucher is not active.",
-                'return_code' => '-202',
-            ], 401);
+            $customErrors[] = [
+                "error_code" => "-7105",
+                "error_field" => "available"
+            ];
         }
-
-        $mismatches = [];
 
         if ($voucher->product_id != $request->product_id) {
-            $mismatches[] = "Product ID does not match the voucher's product.";
+            $customErrors[] = [
+                "error_code" => "-7106",
+                "error_field" => "product_id"
+            ];
         }
-    
-        if (!empty($mismatches)) {
-            return response([
-                'message' => "Validation errors: " . implode(' ', $mismatches),
-                'return_code' => '-209',
-            ], 404);
-        }
+    }
 
+    if (!empty($customErrorCodes) || !empty($customErrors)) {
+        // Merge all errors together
+        $errors = array_merge($customErrorCodes, $customErrors);
+
+        // Fetch custom error messages from the database
+        $errorMessages = $errorCodesController->getErrorMessagesFromCodes($errors);
+
+        return response()->json([
+            'message' => 'Validation failed',
+            'errors' => $errorMessages,
+        ], 422);
+    }
+
+    if ($voucher) {
         $voucher->deplete_date = now();
         $voucher->available = false;
+        $voucher->updated_by = $request->attributes->get('preferred_username');
+        $voucher->updated_at = now();
+
         $voucher->service_reference = $request->service_reference;
         $voucher->business_unit = $request->business_unit;
+        $voucher->IMEI = $request->IMEI;
+        $voucher->SIMNarrative = $request->SIMNarrative;
+        $voucher->PCN = $request->PCN;
+        $voucher->SIMNo = $request->SIMNo;
+        $voucher->IMSI = $request->IMSI;
         $voucher->save();
 
         $history = new HistoryLogsModel();
         $history->username = $request->attributes->get('preferred_username');
-        $history->transaction = "Consumed voucher";
+        $history->transaction = "Consumed Voucher";
         $history->database_table = "voucher_main";
         $history->old_data = json_encode($voucher_old);
         $history->new_data = json_encode($voucher);
         $history->save();
-    
-        return response([
-            'message' => "Voucher consumed successfully.",
-            'return_code' => '0',
-            'results' => $voucher,
-        ], 200);
     }
+
+    return response([
+        'message' => "Voucher consumed successfully.",
+        'return_code' => '0',
+        'results' => $voucher,
+    ], 200);
+}
+
 
 
 
     // OLD CODE --------------------------------
     // public function consumeVoucher(Request $request)
     // {
-    //     $voucher = VoucherModel::where('voucher_code', $request->voucher_code)->first();
-    //     $voucher_old = $voucher = VoucherModel::with(['voucherChildren' => function ($query) {$query->where('depleted', 0)->first();}
-    //     ])
-    //         ->where('voucher_code', $request->voucher_code)
-    //         ->first();
-
-    //     if (!$voucher) {
-    //         return response([
-    //             'message' => "Voucher not found",
-    //             'return_code' => '-201',
-    //         ], 404);
-    //     }
-
-    //     if ($voucher->available == false) {
-    //         return response([
-    //             'message' => "Voucher is not active",
-    //             'return_code' => '-202',
-    //         ], 404);
-    //     }
-
-    //     if ($voucher->expiry_date < date('Y-m-d')) {
-    //         return response([
-    //             'message' => "Voucher has expired",
-    //             'return_code' => '-203',
-    //         ], 404);
-    //     }
-
-    //     $voucherChild = $voucher->voucherChildren()->where('depleted', 0)->first();
-
-    //     if ($voucherChild) {
-    //         $voucherChild->update([
-    //             'depleted' => true,
-    //             'depleted_date' => now(),
-    //             'serviceID' => $request->serviceID,
-    //             'business_unit' => $request->business_unit,
-    //             'serial_number' => $request->serial_number
-    //         ]);
-
-    //         $voucherRefreshed = $voucher->fresh([
-    //             'voucherChildren' => function ($query) use ($voucherChild) {
-    //                 $query->where('id', $voucherChild->id);
-    //             }
-    //         ]);
-
-    //         $history = new VoucherHistory();
-    //         $history->user_id = 1;
-    //         $history->transaction = "Used voucher";
-    //         $history->voucher_old_data = json_encode($voucher_old);
-    //         $history->voucher_new_data = json_encode($voucherRefreshed);
-    //         $history->save();
-
-    //         return response([
-    //             'message' => "Voucher associated successfully",
-    //             'return_code' => '0',
-    //             'results' => $voucherRefreshed,
-    //         ], 200);
-    //     } else {
-    //         return response([
-    //             'message' => "No available voucher children to associate",
-    //             'return_code' => '1',
-    //         ], 404);
-    //     }
-    // }
-
-    // public function activateVoucher(Request $request)
-    // {
-
     //     $request->validate([
-    //         'voucher_code' => 'required',
+    //         'serial' => 'required',
+    //         // 'PUK' => 'required',
+    //         'product_id' => 'required',
+    //         'business_unit' => 'required',
+    //         'service_reference' => 'required',
+    //         'IMEI' => 'required',
+    //         'SIMNarrative' => 'required',
+    //         'PCN' => 'required',
+    //         'SIMNo' => 'required',
+    //         'IMSI' => 'required',
     //     ]);
 
-    //     $voucherCode = $request->voucher_code;
-
-    //     $voucher = VoucherModel::with([
-    //         'voucherChildren' => function ($query) {
-    //             $query->where('depleted', 0)->first();
-    //         }
-    //     ])
-    //         ->where('voucher_code', $request->voucher_code)
-    //         ->get();
-
-    //     $voucher_old = VoucherModel::with([
-    //         'voucherChildren' => function ($query) {
-    //             $query->where('depleted', 0)->first();
-    //         }
-    //     ])
-    //         ->where('voucher_code', $request->voucher_code)
-    //         ->get();
+    //     $voucher = VoucherModel::where('serial', $request->serial)->first();
 
     //     if (!$voucher) {
     //         return response([
-    //             'message' => "Voucher not found",
+    //             'message' => "Voucher not found.",
     //             'return_code' => '-201',
     //         ], 404);
     //     }
 
-    //     if ($voucher->expiry_date < date('Y-m-d')) {
+    //      $voucher_old = clone $voucher;
+
+    //     if ($voucher->deplete_date != null) {
     //         return response([
-    //             'message' => "Voucher has expired",
-    //             'return_code' => '-203',
-    //         ], 404);
+    //             'message' => "This voucher has already been consumed.",
+    //             'return_code' => '-204',
+    //         ], 401);
     //     }
 
-    //     if ($voucher->depleted == true) {
+    //     if ($voucher->expire_date && $voucher->expire_date < date('Y-m-d')) {
     //         return response([
-    //             'message' => "Voucher is already depleted ",
-    //             'return_code' => '-204',
-    //         ], 404);
+    //             'message' => "Voucher has expired.",
+    //             'return_code' => '-203',
+    //         ], 401);
     //     }
 
     //     if ($voucher->available == false) {
     //         return response([
-    //             'message' => "Voucher is not active",
+    //             'message' => "Voucher is not active.",
     //             'return_code' => '-202',
+    //         ], 401);
+    //     }
+
+    //     $mismatches = [];
+
+    //     if ($voucher->product_id != $request->product_id) {
+    //         $mismatches[] = "Product ID does not match the voucher's product.";
+    //     }
+
+    //     if (!empty($mismatches)) {
+    //         return response([
+    //             'message' => "Validation errors: " . implode(' ', $mismatches),
+    //             'return_code' => '-209',
     //         ], 404);
     //     }
 
-    //     $voucher->depleted = true;
-    //     $voucher->depleted_date = now();
-
+    //     $voucher->deplete_date = now();
+    //     $voucher->available = false;
+    //     $voucher->service_reference = $request->service_reference;
+    //     $voucher->business_unit = $request->business_unit;
     //     $voucher->save();
 
-    //     $voucher_new = array(json_decode($voucher, true));
-
-    //     $history = new VoucherHistory();
-    //     $history->user_id = 1;
-    //     $history->transaction = "Used voucher";
-    //     $history->voucher_old_data = json_encode($voucher_old);
-    //     $history->voucher_new_data = json_encode($voucher_new);
+    //     $history = new HistoryLogsModel();
+    //     $history->username = $request->attributes->get('preferred_username');
+    //     $history->transaction = "Consumed voucher";
+    //     $history->database_table = "voucher_main";
+    //     $history->old_data = json_encode($voucher_old);
+    //     $history->new_data = json_encode($voucher);
     //     $history->save();
 
     //     return response([
-    //         'message' => "Voucher has been successfully activated",
-    //         'results' => $voucher
-    //     ], 201);
+    //         'message' => "Voucher consumed successfully.",
+    //         'return_code' => '0',
+    //         'results' => $voucher,
+    //     ], 200);
     // }
 }
