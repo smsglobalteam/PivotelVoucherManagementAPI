@@ -256,6 +256,12 @@ class ErrorCodesController extends Controller
                     case 'business_unit_string':
                         $errorCode = '-7015';
                         break;
+                    case 'service_reference_required':
+                        $errorCode = '-7016';
+                        break;
+                    case 'business_unit_required':
+                        $errorCode = '-7017';
+                        break;
                         // Add other cases as needed
                 }
 

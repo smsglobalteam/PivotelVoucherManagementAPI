@@ -57,6 +57,8 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-7013', 'error_message' => 'The IMSI must be a string.', 'error_description' => 'IMSI should consist of numeric characters only.'],
             ['error_code' => '-7014', 'error_message' => 'The service reference must be a string.', 'error_description' => 'Service reference should be textual.'],
             ['error_code' => '-7015', 'error_message' => 'The business unit must be a string.', 'error_description' => 'Business unit descriptions must be provided in text format.'],
+            ['error_code' => '-7016', 'error_message' => 'The service reference is required.', 'error_description' => 'Missing service reference in the request.'],
+            ['error_code' => '-7017', 'error_message' => 'The business unit required.', 'error_description' => 'Missing business unit in the request.'],
 
             //Voucher Activation
             ['error_code' => '-7102', 'error_message' => 'Voucher under that serial not found.', 'error_description' => 'No matching serial for any voucher.'],

@@ -59,6 +59,7 @@ class ProductController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $errorMessages,
+                'test' => $customErrorCodes,
             ], 422);
         }
 
