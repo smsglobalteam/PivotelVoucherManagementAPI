@@ -174,7 +174,7 @@ class VoucherController extends Controller
             'value' => 'nullable|integer',
             // 'serial' => 'required|string|unique:voucher_main,serial',
 
-            'product_code' => 'required|exists:product,product_code',
+            // 'product_code' => 'required|exists:product,product_code',
             'product_id' => 'required|exists:product,product_id',
 
             'IMEI' => 'nullable|string',
@@ -192,12 +192,14 @@ class VoucherController extends Controller
 
         $voucher_old = clone $voucher;
 
+        $productCode = ProductModel::where('product_id', $request->product_id)->first();
+
         $voucher->update([
             'expire_date' => $request->expire_date,
             'value' => $request->value,
             // 'serial' => $request->serial,
         
-            'product_code' => $request->product_code,
+            'product_code' => $productCode->product_code,
             'product_id' => $request->product_id,
         
             'IMEI' => $request->IMEI,
