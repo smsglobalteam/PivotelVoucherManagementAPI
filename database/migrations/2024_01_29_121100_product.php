@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('product', function (Blueprint $table) {
             $table->id();
             $table->string('product_code')->unique();
-            $table->bigInteger('product_id')->unique();
             $table->string('product_name')->unique();
+            $table->boolean('status')->default(true);
 
             $table->string('supplier');
 

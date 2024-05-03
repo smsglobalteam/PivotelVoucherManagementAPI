@@ -93,7 +93,7 @@ class ErrorCodesController extends Controller
             return response([
                 'message' => "Error code not found",
                 'return_code' => '-101',
-                
+
             ], 404);
         }
 
@@ -180,7 +180,14 @@ class ErrorCodesController extends Controller
                     case 'supplier_required':
                         $errorCode = '-5010';
                         break;
+                    case 'status_required':
+                        $errorCode = '-5011';
+                        break;
+                    case 'status_boolean':
+                        $errorCode = '-5012';
+                        break;
 
+                        // Batch order processing errors
                     case 'batch_id_required':
                         $errorCode = '-6002';
                         break;
@@ -211,7 +218,7 @@ class ErrorCodesController extends Controller
                     case 'file_mimes':
                         $errorCode = '-6011';
                         break;
-                    //-6012, -6013, -6014 are not present here as they are not validation rules but custom checks
+                        //-6012, -6013, -6014 are not present here as they are not validation rules but custom checks
 
                         // Voucher processing errors
                     case 'serial_required':
@@ -241,7 +248,7 @@ class ErrorCodesController extends Controller
                     case 'simnarrative_string':
                         $errorCode = '-7010';
                         break;
-                    case 'pcn_string':
+                    case 'msisdn_string':
                         $errorCode = '-7011';
                         break;
                     case 'simno_string':
@@ -263,6 +270,23 @@ class ErrorCodesController extends Controller
                         $errorCode = '-7017';
                         break;
                         // Add other cases as needed
+
+                        // Voucher type processing errors
+                    case 'voucher_code_invalid':
+                        $errorCode = '-8002';
+                        break;
+                    case 'voucher_code_required':
+                        $errorCode = '-8003';
+                        break;
+                    case 'voucher_name_required':
+                        $errorCode = '-8004';
+                        break;
+                    case 'voucher_type_id_required':
+                        $errorCode = '-8005';
+                        break;
+                    case 'voucher_type_id_exists':
+                        $errorCode = '-8006';
+                        break;
                 }
 
                 // Only add to the array if an error code was found

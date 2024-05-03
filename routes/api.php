@@ -10,6 +10,7 @@ use App\Http\Controllers\VoucherActivationController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\VoucherHistoryController;
 use App\Http\Controllers\VoucherMainController;
+use App\Http\Controllers\VoucherTypeController;
 use App\Http\Controllers\WebServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -50,9 +51,14 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::patch('/setActive/{serial}', [VoucherController::class, 'setVoucherActive']);
     Route::patch('/setInactive/{serial}', [VoucherController::class, 'setVoucherInactive']);
 
+    //Voucher Type API
+    Route::get('/voucherType', [VoucherTypeController::class, 'getAllVoucherType']);
+    Route::post('/voucherType', [VoucherTypeController::class, 'createNewVoucherType']);
+    Route::get('/voucherType/{id}', [VoucherTypeController::class, 'getAllVoucherByID']);
+    Route::put('/voucherType/{id}', [VoucherTypeController::class, 'editVoucherTypeByCode']);
+
     //Voucher Activation API
     Route::post('/consumeVoucher', [VoucherActivationController::class, 'consumeVoucher']);
-
 
     //Voucher History API
     Route::get('/voucher-history', [HistoryLogsController::class, 'getAllHistory']);
@@ -87,7 +93,6 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/service', [WebServiceController::class, 'getAllApplication']);
     Route::get('/service/{id}', [WebServiceController::class, 'getApplicationByID']);
     Route::post('/service', [WebServiceController::class, 'submitApplication']);
-
 });
 
 

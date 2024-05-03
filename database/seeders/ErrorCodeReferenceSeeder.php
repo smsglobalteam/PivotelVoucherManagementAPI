@@ -17,15 +17,17 @@ class ErrorCodeReferenceSeeder extends Seeder
         $errorCodes = [
             //Product Errors
             ['error_code' => '-5001', 'error_message' => 'Product not found in the database.', 'error_description' => 'No record for the product in the database.'],
-            ['error_code' => '-5002', 'error_message' => 'The Product Code is required.', 'error_description' => 'Missing product code in the data provided.'],
-            ['error_code' => '-5003', 'error_message' => 'The Product Code can not have spaces.', 'error_description' => 'Product code contains invalid spaces.'],
-            ['error_code' => '-5004', 'error_message' => 'The Product Code must be unique.', 'error_description' => 'Duplicate product code entry detected.'],
-            ['error_code' => '-5005', 'error_message' => 'The Product ID is required.', 'error_description' => 'Missing product ID in the data provided.'],
-            ['error_code' => '-5006', 'error_message' => 'The Product ID must be an integer.', 'error_description' => 'Invalid format for product ID, integer required.'],
-            ['error_code' => '-5007', 'error_message' => 'The Product ID must be unique.', 'error_description' => 'Duplicate product ID entry detected.'],
-            ['error_code' => '-5008', 'error_message' => 'The Product Name is required.', 'error_description' => 'Missing product name in the data provided.'],
-            ['error_code' => '-5009', 'error_message' => 'The Product Name must be unique.', 'error_description' => 'Duplicate product name entry detected.'],
-            ['error_code' => '-5010', 'error_message' => 'The Supplier is required.', 'error_description' => 'Missing supplier information.'],
+            ['error_code' => '-5002', 'error_message' => 'The product code is required.', 'error_description' => 'Missing product code in the data provided.'],
+            ['error_code' => '-5003', 'error_message' => 'The product code can not have spaces.', 'error_description' => 'Product code contains invalid spaces.'],
+            ['error_code' => '-5004', 'error_message' => 'The product code must be unique.', 'error_description' => 'Duplicate product code entry detected.'],
+            ['error_code' => '-5005', 'error_message' => 'The product ID is required.', 'error_description' => 'Missing product ID in the data provided.'],
+            ['error_code' => '-5006', 'error_message' => 'The product ID must be an integer.', 'error_description' => 'Invalid format for product ID, integer required.'],
+            ['error_code' => '-5007', 'error_message' => 'The product ID must be unique.', 'error_description' => 'Duplicate product ID entry detected.'],
+            ['error_code' => '-5008', 'error_message' => 'The product name is required.', 'error_description' => 'Missing product name in the data provided.'],
+            ['error_code' => '-5009', 'error_message' => 'The product name must be unique.', 'error_description' => 'Duplicate product name entry detected.'],
+            ['error_code' => '-5010', 'error_message' => 'The product supplier is required.', 'error_description' => 'Missing product supplier information.'],
+            ['error_code' => '-5011', 'error_message' => 'The status is required.', 'error_description' => 'Missing product status information.'],
+            ['error_code' => '-5012', 'error_message' => 'The status must be true(1) or false(0).', 'error_description' => 'Non boolean product status value.'],
             
             //Batch Order Errors
             ['error_code' => '-6002', 'error_message' => 'The batch ID is required.', 'error_description' => 'Missing batch ID in the request.'],
@@ -52,7 +54,7 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-7008', 'error_message' => 'The expire date must be after today.', 'error_description' => 'Provided expire date must be a future date.'],
             ['error_code' => '-7009', 'error_message' => 'The IMEI must be a string.', 'error_description' => 'IMEI should be entered as a string of digits.'],
             ['error_code' => '-7010', 'error_message' => 'The SIMNarrative must be a string.', 'error_description' => 'Narrative input must be textual.'],
-            ['error_code' => '-7011', 'error_message' => 'The PCN must be a string.', 'error_description' => 'PCN values are expected to be strings.'],
+            ['error_code' => '-7011', 'error_message' => 'The MSISDN must be a string.', 'error_description' => 'MSISDN values are expected to be strings.'],
             ['error_code' => '-7012', 'error_message' => 'The SIMNo must be a string.', 'error_description' => 'SIM number input should be alphanumeric.'],
             ['error_code' => '-7013', 'error_message' => 'The IMSI must be a string.', 'error_description' => 'IMSI should consist of numeric characters only.'],
             ['error_code' => '-7014', 'error_message' => 'The service reference must be a string.', 'error_description' => 'Service reference should be textual.'],
@@ -66,6 +68,13 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-7104', 'error_message' => 'This voucher has already expired.', 'error_description' => 'Voucher is past its expiration date.'],
             ['error_code' => '-7105', 'error_message' => 'This voucher is not active.', 'error_description' => 'Voucher is not currently active.'],
             ['error_code' => '-7106', 'error_message' => 'Product ID does not match the voucher product.', 'error_description' => 'Mismatch between voucher and product ID.'],
+
+            //Voucher Type
+            ['error_code' => '-8002', 'error_message' => 'Voucher code format is invalid.', 'error_description' => ''],
+            ['error_code' => '-8003', 'error_message' => 'The voucher code is required.', 'error_description' => ''],
+            ['error_code' => '-8004', 'error_message' => 'The voucher name is required.', 'error_description' => ''],
+            ['error_code' => '-8005', 'error_message' => 'The voucher type ID is required.', 'error_description' => ''],
+            ['error_code' => '-8006', 'error_message' => 'The voucher type ID must exist in the database.', 'error_description' => ''],
         ];
 
         foreach ($errorCodes as $code) {

@@ -95,48 +95,54 @@ class VoucherController extends Controller
         ], 200);
     }
 
-    public function createVoucher(Request $request)
+    public function createVoucher(Request $request, ErrorCodesController $errorCodesController)
     {
-        $request->validate([
-            'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-            'value' => 'nullable|integer',
+        $validator = Validator::make($request->all(), [
             'serial' => 'required|string|unique:voucher_main,serial',
+            'product_id' => 'required|exists:product,id',
+            'voucher_type_id' => 'required|exists:voucher_type,id',
 
-            'product_code' => 'required|exists:product,product_code',
-            'product_id' => 'required|exists:product,product_id',
-
-            'IMEI' => 'nullable|string',
-            'SIMNarrative' => 'nullable|string',
-            'PCN' => 'nullable|string',
-            'SIMNo' => 'nullable|string',
+            'SIM' => 'nullable|string',
             'PUK' => 'required|unique:voucher_main,PUK',
             'IMSI' => 'nullable|string',
+            'MSISDN' => 'nullable|string',
             
             'service_reference' => 'nullable|string',
             'business_unit' => 'nullable|string',
 
             'batch_id' => 'required|exists:batch_order,batch_id',
+            'note' => 'nullable|string',
         ]);
 
+        if ($validator->fails()) {
+            // Map validation errors to custom codes
+            $customErrorCodes = $errorCodesController->mapValidationErrorsToCustomCodes($validator);
+
+            // Fetch custom error messages from the database
+            $errorMessages = $errorCodesController->getErrorMessagesFromCodes($customErrorCodes);
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $errorMessages,
+            ], 422);
+        }
+
         $voucher = VoucherModel::create([
-            'expire_date' => $request->expire_date,
-            'value' => $request->value,
             'serial' => $request->serial,
         
-            'product_code' => $request->product_code,
             'product_id' => $request->product_id,
+            'voucher_type_id' => $request->voucher_type_id,
         
-            'IMEI' => $request->IMEI,
-            'SIMNarrative' => $request->SIMNarrative,
-            'PCN' => $request->PCN,
-            'SIMNo' => $request->SIMNo,
+            'SIM' => $request->SIMNo,
             'PUK' => $request->PUK,
             'IMSI' => $request->IMSI,
+            'MSISDN' => $request->MSISDN,
             
             'service_reference' => $request->service_reference,
             'business_unit' => $request->business_unit,
             
             'batch_id' => $request->batch_id,
+            'note' => $request->note,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
@@ -170,24 +176,26 @@ class VoucherController extends Controller
         }
 
         $request->validate([
-            'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-            'value' => 'nullable|integer',
+            // 'expire_date' => 'nullable|date_format:Y-m-d|after:today',
+            // 'value' => 'nullable|integer',
             // 'serial' => 'required|string|unique:voucher_main,serial',
 
             // 'product_code' => 'required|exists:product,product_code',
-            'product_id' => 'required|exists:product,product_id',
+            'product_id' => 'required|exists:product,id',
 
-            'IMEI' => 'nullable|string',
-            'SIMNarrative' => 'nullable|string',
-            'PCN' => 'nullable|string',
+            // 'IMEI' => 'nullable|string',
+            // 'SIMNarrative' => 'nullable|string',
+            // 'PCN' => 'nullable|string',
             'SIMNo' => 'nullable|string',
             'PUK' => 'nullable|unique:voucher_main,PUK,'.$voucher->id,
             'IMSI' => 'nullable|string',
+            'MSISDN' => 'nullable|string',
             
             'service_reference' => 'nullable|string',
             'business_unit' => 'nullable|string',
             
             // 'batch_id' => 'required|exists:batch_order,batch_id',
+            'note' =>  'nullable|string',
         ]);
 
         $voucher_old = clone $voucher;
@@ -195,24 +203,26 @@ class VoucherController extends Controller
         $productCode = ProductModel::where('product_id', $request->product_id)->first();
 
         $voucher->update([
-            'expire_date' => $request->expire_date,
-            'value' => $request->value,
+            // 'expire_date' => $request->expire_date,
+            // 'value' => $request->value,
             // 'serial' => $request->serial,
         
-            'product_code' => $productCode->product_code,
+            // 'product_code' => $productCode->product_code,
             'product_id' => $request->product_id,
         
-            'IMEI' => $request->IMEI,
-            'SIMNarrative' => $request->SIMNarrative,
-            'PCN' => $request->PCN,
-            'SIMNo' => $request->SIMNo,
+            // 'IMEI' => $request->IMEI,
+            // 'SIMNarrative' => $request->SIMNarrative,
+            // 'PCN' => $request->PCN,
+            'SIM' => $request->SIMNo,
             'PUK' => $request->PUK,
             'IMSI' => $request->IMSI,
+            'MSISDN' => $request->MSISDN,
             
             'service_reference' => $request->service_reference,
             'business_unit' => $request->business_unit,
             
             // 'batch_id' => $request->batch_id,
+            'note' => $request->note,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 

@@ -71,10 +71,10 @@ class BatchOrderController extends Controller
             $newRow = array_fill(0, count($header), null);
 
             // Check and assign the first column to the 'serial' column (index 2)
-            $newRow[2] = isset($row[0]) ? $row[0] : null;
+            $newRow[0] = isset($row[0]) ? $row[0] : null;
 
             // Check and assign the second column to the 'PUK' column (index 7)
-            $newRow[7] = isset($row[1]) ? $row[1] : null;
+            $newRow[2] = isset($row[1]) ? $row[1] : null;
 
             // Add the new row to the transformed content
             $transformedContent[] = $newRow;
@@ -147,7 +147,6 @@ class BatchOrderController extends Controller
         $errors = [];
         foreach ($validator->errors()->getMessages() as $field => $messages) {
             foreach ($messages as $message) {
-                // Assuming you have a method to map default Laravel error messages to custom codes
                 $errorCode = $this->getCustomErrorCode($message);
                 $errors[$rowNumber][] = [
                     'error_code' => $errorCode,
@@ -214,7 +213,8 @@ class BatchOrderController extends Controller
             $request->validate([
                 'batch_id' => 'required|string|unique:batch_order,batch_id',
                 'batch_count' => 'required|integer|min:1',
-                'product_id' => 'required|exists:product,product_id',
+                'product_id' => 'required|exists:product,id',
+                'voucher_type_id' => 'required|exists:voucher_type,id',
                 'file' => 'required|file|mimes:csv,txt',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -222,13 +222,13 @@ class BatchOrderController extends Controller
             $customErrors = array_merge($customErrors, $errorCodesController->mapValidationErrorsToCustomCodes($e->validator));
         }
 
-        $product = ProductModel::where('product_id', $request->product_id)
+        $product = ProductModel::where('id', $request->product_id)
             ->first();
 
         if ($product === null) {
             $product = new \stdClass();
             $product->product_code = null;
-            $product->product_id = null;
+            $product->id = null;
         }
 
         $file = $request->file('file');
@@ -264,17 +264,14 @@ class BatchOrderController extends Controller
             }
 
             $rowCount++;
-            $expireDate = $row[0];
-            $value = $row[1];
-            $serialNumber = $row[2];
-            $IMEI = $row[3];
-            $SIMNarrative = $row[4];
-            $PCN = $row[5];
-            $SIMNo = $row[6];
-            $PUK = $row[7];
-            $IMSI = $row[8];
-            $serviceReference = $row[9];
-            $businessUnit = $row[10];
+            $serialNumber = $row[0];
+            $SIM = $row[1];
+            $PUK = $row[2];
+            $IMSI = $row[3];
+            $MSISDN = $row[4];
+            $serviceReference = $row[5];
+            $businessUnit = $row[6];
+            $note = $row[7];
 
             // Record every appearance of serials and PUKs
             $appearanceDetails['serial'][$serialNumber][] = $rowCount;
@@ -316,28 +313,22 @@ class BatchOrderController extends Controller
             // Perform validation for the current row
             $validator = Validator::make([
                 'serial' => $serialNumber,
+                'SIM' => $SIM,
                 'PUK' => $PUK,
-                'value' => $value,
-                'expire_date' => $expireDate,
-                'IMEI' => $IMEI,
-                'SIMNarrative' => $SIMNarrative,
-                'PCN' => $PCN,
-                'SIMNo' => $SIMNo,
                 'IMSI' => $IMSI,
+                'MSISDN' => $MSISDN,
                 'service_reference' => $serviceReference,
                 'business_unit' => $businessUnit,
+                'note' => $note,
             ], [
                 'serial' => 'required|string|unique:voucher_main,serial',
+                'SIM' => 'nullable|string',
                 'PUK' => 'required|string|unique:voucher_main,PUK',
-                'value' => 'nullable|integer',
-                'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-                'IMEI' => 'nullable|string',
-                'SIMNarrative' => 'nullable|string',
-                'PCN' => 'nullable|string',
-                'SIMNo' => 'nullable|string',
                 'IMSI' => 'nullable|string',
+                'MSISDN' => 'nullable|string',
                 'service_reference' => 'nullable|string',
                 'business_unit' => 'nullable|string',
+                'note' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -357,18 +348,16 @@ class BatchOrderController extends Controller
             $validData[] = [
                 'serial' => $serialNumber,
                 'PUK' => $PUK,
-                'value' => $value,
-                'expire_date' => $expireDate,
-                'IMEI' => $IMEI,
-                'SIMNarrative' => $SIMNarrative,
-                'PCN' => $PCN,
-                'SIMNo' => $SIMNo,
+                'SIM' => $SIM,
                 'IMSI' => $IMSI,
+                'MSISDN' => $MSISDN,
                 'service_reference' => $serviceReference,
                 'business_unit' => $businessUnit,
+                'note' => $note,
 
-                'product_code' => $product->product_code,
-                'product_id' => $product->product_id,
+                // 'product_code' => $product->product_code,
+                'product_id' => $product->id,
+                'voucher_type_id' => $request->voucher_type_id,
 
                 'created_by' => $request->attributes->get('preferred_username'),
 
@@ -414,19 +403,20 @@ class BatchOrderController extends Controller
         $batchOrder = BatchOrderModel::create([
             'batch_id' => $request->batch_id,
             'product_id' => $request->product_id,
+            'voucher_type_id' => $request->voucher_type_id,
             'batch_count' => $rowCount,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
         $vouchers = [];
         foreach ($validData as &$data) {
-            if (!isset($data['value']) || $data['value'] === '') {
-                $data['value'] = 0;
-            }
+            // if (!isset($data['value']) || $data['value'] === '') {
+            //     $data['value'] = 0;
+            // }
 
-            if (!isset($data['expire_date']) || $data['expire_date'] === '') {
-                $data['expire_date'] = null;
-            }
+            // if (!isset($data['expire_date']) || $data['expire_date'] === '') {
+            //     $data['expire_date'] = null;
+            // }
 
             $data['batch_id'] = $batchOrder->batch_id;
             $voucher = VoucherModel::create($data);
@@ -470,7 +460,7 @@ class BatchOrderController extends Controller
         $batchOrder_old = clone $batchOrder;
 
         $request->validate([
-            'product_id' => 'required|exists:product,product_id',
+            'product_id' => 'required|exists:product,id',
         ]);
 
         $batchOrder->update([

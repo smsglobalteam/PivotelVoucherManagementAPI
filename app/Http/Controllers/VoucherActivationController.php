@@ -24,11 +24,12 @@ class VoucherActivationController extends Controller
             'product_id' => 'required',
             'business_unit' => 'required',
             'service_reference' => 'required',
-            'IMEI' => 'nullable',
-            'SIMNarrative' => 'nullable',
-            'PCN' => 'nullable',
-            'SIMNo' => 'nullable',
+            // 'IMEI' => 'nullable',
+            // 'SIMNarrative' => 'nullable',
+            // 'PCN' => 'nullable',
+            'SIM' => 'nullable',
             'IMSI' => 'nullable',
+            'MSISDN' => 'nullable',
         ]);
 
         if ($validator->fails()) {
@@ -54,13 +55,6 @@ class VoucherActivationController extends Controller
                 ];
             }
 
-            if ($voucher->expire_date && $voucher->expire_date < date('Y-m-d')) {
-                $customErrors[] = [
-                    "error_code" => "-7104",
-                    "error_field" => "expire_date"
-                ];
-            }
-
             if ($voucher->available == false) {
                 $customErrors[] = [
                     "error_code" => "-7105",
@@ -68,7 +62,7 @@ class VoucherActivationController extends Controller
                 ];
             }
 
-            if ($voucher->product_id != $request->product_id) {
+            if ($voucher->product_id != $request->id) {
                 $customErrors[] = [
                     "error_code" => "-7106",
                     "error_field" => "product_id"
@@ -90,7 +84,6 @@ class VoucherActivationController extends Controller
         }
 
         if ($voucher) {
-
             $voucher->update(array_filter([
                 'deplete_date' => now(),
                 'available' => false,
@@ -98,11 +91,12 @@ class VoucherActivationController extends Controller
             
                 'service_reference' => $request->service_reference,
                 'business_unit' => $request->business_unit,
-                'IMEI' => $request->IMEI,
-                'SIMNarrative' => $request->SIMNarrative,
-                'PCN' => $request->PCN,
-                'SIMNo' => $request->SIMNo,
+                // 'IMEI' => $request->IMEI,
+                // 'SIMNarrative' => $request->SIMNarrative,
+                // 'PCN' => $request->PCN,
+                'SIM' => $request->SIM,
                 'IMSI' => $request->IMSI,
+                'MSISDN' => $request->MSISDN,
             ], function ($value) {
                 return !is_null($value);
             }));

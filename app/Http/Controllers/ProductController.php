@@ -44,7 +44,6 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
-            'product_id' => 'required|integer|unique:product,product_id',
             'product_name' => 'required|unique:product,product_name',
             'supplier' => 'required',
         ]);
@@ -59,13 +58,11 @@ class ProductController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $errorMessages,
-                'test' => $customErrorCodes,
             ], 422);
         }
 
         $product = ProductModel::create([
             'product_code' => $request->product_code,
-            'product_id' => $request->product_id,
             'product_name' => $request->product_name,
             'supplier' => $request->supplier,
             'created_by' => $request->attributes->get('preferred_username'),
@@ -102,6 +99,7 @@ class ProductController extends Controller
             // 'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
             // 'product_id' => 'required|integer|unique:product,product_id',
             'product_name' => 'required|unique:product,product_name,' . $product->id,
+            'status' => 'required|boolean',
             'supplier' => 'required',
         ]);
 
@@ -122,6 +120,7 @@ class ProductController extends Controller
             // 'product_code' => $request->product_code,
             // 'product_id' => $request->product_id,
             'product_name' => $request->product_name,
+            'status' => $request->status,
             'supplier' => $request->supplier,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);

@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('batch_order', function (Blueprint $table) {
             $table->id();
             $table->string('batch_id')->unique();
-            $table->bigInteger('product_id');
+            $table->bigInteger('product_id')->unsigned();
+            $table->bigInteger('voucher_type_id')->unsigned();
             $table->integer('batch_count');
 
             $table->string('created_by')->nullable();
@@ -23,7 +24,7 @@ return new class extends Migration
         });
 
         Schema::table('batch_order', function(Blueprint $table) {
-            $table->foreign('product_id')->references('product_id')->on('product'); 
+            $table->foreign('product_id')->references('id')->on('product'); 
         });
     }
 
