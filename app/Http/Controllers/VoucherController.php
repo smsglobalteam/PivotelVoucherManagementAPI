@@ -182,16 +182,8 @@ class VoucherController extends Controller
         }
 
         $request->validate([
-            // 'expire_date' => 'nullable|date_format:Y-m-d|after:today',
-            // 'value' => 'nullable|integer',
-            // 'serial' => 'required|string|unique:voucher_main,serial',
-
-            // 'product_code' => 'required|exists:product,product_code',
-            'product_id' => 'required|exists:product,id',
-
-            // 'IMEI' => 'nullable|string',
-            // 'SIMNarrative' => 'nullable|string',
-            // 'PCN' => 'nullable|string',
+            // 'product_id' => 'required|exists:product,id',
+            // 'voucher_type_id' => 'required|exists:voucher_type,id',
             'SIMNo' => 'nullable|string',
             'PUK' => 'nullable|unique:voucher_main,PUK,'.$voucher->id,
             'IMSI' => 'nullable|string',
@@ -206,20 +198,11 @@ class VoucherController extends Controller
 
         $voucher_old = clone $voucher;
 
-        $productCode = ProductModel::where('product_id', $request->product_id)->first();
 
         $voucher->update([
-            // 'expire_date' => $request->expire_date,
-            // 'value' => $request->value,
-            // 'serial' => $request->serial,
-        
-            // 'product_code' => $productCode->product_code,
-            'product_id' => $request->product_id,
-        
-            // 'IMEI' => $request->IMEI,
-            // 'SIMNarrative' => $request->SIMNarrative,
-            // 'PCN' => $request->PCN,
-            'SIM' => $request->SIMNo,
+            // 'product_id' => $request->product_id,
+            // 'voucher_type_id' => $request->voucher_type_id,
+            'SIM' => $request->SIM,
             'PUK' => $request->PUK,
             'IMSI' => $request->IMSI,
             'MSISDN' => $request->MSISDN,
