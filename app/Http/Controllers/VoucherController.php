@@ -35,12 +35,18 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $voucherHistory = VoucherModel::get();
+        $vouchers = VoucherModel::get();
+
+        $vouchers = VoucherModel::query()
+        ->leftJoin('product', 'voucher_main.product_id', '=', 'product.id')
+        ->leftJoin('voucher_type', 'voucher_main.voucher_type_id', '=', 'voucher_type.id')
+        ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name')
+        ->get();
 
         return response([
             'message' => "All voucher displayed successfully",
             'return_code' => '0',
-            'results' => $voucherHistory,
+            'results' => $vouchers,
         ], 200);
     }
 
@@ -67,7 +73,7 @@ class VoucherController extends Controller
 
     public function nextAvailable($product_id)
     {
-        $product = ProductModel::where('product_id', $product_id)->first();
+        $product = ProductModel::where('id', $product_id)->first();
 
         if (!$product) {
             return response([
@@ -76,7 +82,7 @@ class VoucherController extends Controller
             ], 404);
         }
 
-        $voucher = VoucherModel::where('product_id', $product_id)
+        $voucher = VoucherModel::where('id', $product_id)
             ->where('available', true)
             ->where('deplete_date', null)
             ->first();

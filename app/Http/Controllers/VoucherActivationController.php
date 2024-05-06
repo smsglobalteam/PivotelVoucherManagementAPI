@@ -24,9 +24,6 @@ class VoucherActivationController extends Controller
             'product_id' => 'required',
             'business_unit' => 'required',
             'service_reference' => 'required',
-            // 'IMEI' => 'nullable',
-            // 'SIMNarrative' => 'nullable',
-            // 'PCN' => 'nullable',
             'SIM' => 'nullable',
             'IMSI' => 'nullable',
             'MSISDN' => 'nullable',
@@ -62,7 +59,7 @@ class VoucherActivationController extends Controller
                 ];
             }
 
-            if ($voucher->product_id != $request->id) {
+            if ($voucher->id != $request->product_id) {
                 $customErrors[] = [
                     "error_code" => "-7106",
                     "error_field" => "product_id"
@@ -91,9 +88,6 @@ class VoucherActivationController extends Controller
             
                 'service_reference' => $request->service_reference,
                 'business_unit' => $request->business_unit,
-                // 'IMEI' => $request->IMEI,
-                // 'SIMNarrative' => $request->SIMNarrative,
-                // 'PCN' => $request->PCN,
                 'SIM' => $request->SIM,
                 'IMSI' => $request->IMSI,
                 'MSISDN' => $request->MSISDN,

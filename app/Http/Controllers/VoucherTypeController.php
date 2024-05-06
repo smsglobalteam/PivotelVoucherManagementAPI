@@ -14,7 +14,7 @@ class VoucherTypeController extends Controller
     {
         $voucherType = VoucherTypeModel::query()
         ->leftJoin('product', 'voucher_type.product_id', '=', 'product.id')
-        ->select('voucher_type.*', 'product.product_name as product_name') // Assuming 'name' is the column in the products table that you want
+        ->select('voucher_type.*', 'product.product_name as product_name')
         ->get();
 
         return response([
