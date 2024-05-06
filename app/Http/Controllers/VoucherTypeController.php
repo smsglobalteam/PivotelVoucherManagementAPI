@@ -12,7 +12,10 @@ class VoucherTypeController extends Controller
     //
     public function getAllVoucherType()
     {
-        $voucherType = VoucherTypeModel::get();
+        $voucherType = VoucherTypeModel::query()
+        ->leftJoin('product', 'voucher_type.product_id', '=', 'product.id')
+        ->select('voucher_type.*', 'product.product_name as product_name') // Assuming 'name' is the column in the products table that you want
+        ->get();
 
         return response([
             'message' => "All voucher type displayed successfully",
