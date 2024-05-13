@@ -29,4 +29,15 @@ class HistoryLogsController extends Controller
             'results' => $historyLogs,
         ], 200);
     }
+
+    public function addHistoryLog($username, $transaction, $database_table, $new_data)
+    {
+        $historyLog = new HistoryLogsModel();
+        $historyLog->username = $username;
+        $historyLog->transaction = $transaction;
+        $historyLog->database_table = $database_table;
+        $historyLog->new_data = json_encode($new_data->toArray());
+        $historyLog->save();
+    }   
+
 }

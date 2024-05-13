@@ -130,6 +130,7 @@ class VoucherController extends Controller
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $errorMessages,
+                'error_codes_sent' => $customErrorCodes,
             ], 422);
         }
 
