@@ -8,6 +8,7 @@ use App\Models\VoucherModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\ErrorCodesController;
+use App\Models\VoucherTypeModel;
 
 class VoucherActivationController extends Controller
 {
@@ -22,6 +23,7 @@ class VoucherActivationController extends Controller
         $validator = Validator::make($request->all(), [
             'serial' => 'required',
             'product_id' => 'required',
+            'voucher_code' => 'required',
             'business_unit' => 'required',
             'service_reference' => 'required',
             'SIM' => 'nullable',
@@ -35,6 +37,7 @@ class VoucherActivationController extends Controller
         }
 
         $voucher = VoucherModel::where('serial', $request->serial)->first();
+        
 
         if (!$voucher) {
             $customErrors[] = [
@@ -44,6 +47,8 @@ class VoucherActivationController extends Controller
         } else {
             // Clone voucher for history before modification
             $voucher_old = clone $voucher;
+
+            $voucherType = VoucherTypeModel::where('id', $voucher->voucher_type_id)->first();
 
             if ($voucher->deplete_date != null) {
                 $customErrors[] = [
@@ -59,10 +64,17 @@ class VoucherActivationController extends Controller
                 ];
             }
 
-            if ($voucher->id != $request->product_id) {
+            if ($voucher->product_id != $request->product_id) {
                 $customErrors[] = [
                     "error_code" => "-7106",
                     "error_field" => "product_id"
+                ];
+            }
+
+            if ($voucherType->voucher_code != $request->voucher_code) {
+                $customErrors[] = [
+                    "error_code" => "-8009",
+                    "error_field" => "voucher_code"
                 ];
             }
         }

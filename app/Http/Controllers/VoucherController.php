@@ -6,6 +6,7 @@ use App\Models\BatchOrderModel;
 use App\Models\HistoryLogsModel;
 use App\Models\ProductModel;
 use App\Models\VoucherModel;
+use App\Models\VoucherTypeModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -40,7 +41,7 @@ class VoucherController extends Controller
         $vouchers = VoucherModel::query()
         ->leftJoin('product', 'voucher_main.product_id', '=', 'product.id')
         ->leftJoin('voucher_type', 'voucher_main.voucher_type_id', '=', 'voucher_type.id')
-        ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name')
+        ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name', 'voucher_type.voucher_code')
         ->get();
 
         return response([
@@ -71,18 +72,18 @@ class VoucherController extends Controller
         ], 200);
     }
 
-    public function nextAvailable($product_id)
+    public function nextAvailable($voucher_code)
     {
-        $product = ProductModel::where('id', $product_id)->first();
+        $voucherType = VoucherTypeModel::where('voucher_code', $voucher_code)->first();
 
-        if (!$product) {
+        if (!$voucherType) {
             return response([
-                'message' => "The product ID you entered is not valid.",
+                'message' => "The voucher code you entered is not valid.",
                 'return_code' => '-101',
             ], 404);
         }
 
-        $voucher = VoucherModel::where('id', $product_id)
+        $voucher = VoucherModel::where('voucher_type_id', $voucherType->id)
             ->where('available', true)
             ->where('deplete_date', null)
             ->first();
@@ -101,6 +102,7 @@ class VoucherController extends Controller
         ], 200);
     }
 
+    //Disabled
     public function createVoucher(Request $request, ErrorCodesController $errorCodesController)
     {
         $validator = Validator::make($request->all(), [

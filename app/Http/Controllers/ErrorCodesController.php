@@ -206,9 +206,6 @@ class ErrorCodesController extends Controller
                     case 'batch_count_min':
                         $errorCode = '-6007';
                         break;
-                    case 'product_id_required':
-                        $errorCode = '-6008';
-                        break;
                     case 'product_id_exists':
                         $errorCode = '-6009';
                         break;
@@ -272,7 +269,7 @@ class ErrorCodesController extends Controller
                         // Add other cases as needed
 
                         // Voucher type processing errors
-                    case 'voucher_code_invalid':
+                    case 'voucher_code_regex':
                         $errorCode = '-8002';
                         break;
                     case 'voucher_code_required':
@@ -286,6 +283,15 @@ class ErrorCodesController extends Controller
                         break;
                     case 'voucher_type_id_exists':
                         $errorCode = '-8006';
+                        break;
+                    case 'voucher_code_exists':
+                        $errorCode = '-8007';
+                        break;
+                    case 'voucher_code_unique':
+                        $errorCode = '-8008';
+                        break;
+                    case 'voucher_code_reserved':
+                        $errorCode = '-8009';
                         break;
                 }
 

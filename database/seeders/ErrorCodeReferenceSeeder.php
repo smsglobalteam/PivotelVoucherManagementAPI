@@ -75,6 +75,9 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-8004', 'error_message' => 'The voucher name is required.', 'error_description' => ''],
             ['error_code' => '-8005', 'error_message' => 'The voucher type ID is required.', 'error_description' => ''],
             ['error_code' => '-8006', 'error_message' => 'The voucher type ID must exist in the database.', 'error_description' => ''],
+            ['error_code' => '-8007', 'error_message' => 'The voucher code must exist in the database.', 'error_description' => ''],
+            ['error_code' => '-8008', 'error_message' => 'The voucher code must be unique.', 'error_description' => ''],
+            ['error_code' => '-8009', 'error_message' => 'The voucher code entered does not match the encoded voucher code.', 'error_description' => '']
         ];
 
         foreach ($errorCodes as $code) {
