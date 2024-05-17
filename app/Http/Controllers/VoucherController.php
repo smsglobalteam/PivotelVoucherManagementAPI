@@ -84,6 +84,9 @@ class VoucherController extends Controller
         }
 
         $voucher = VoucherModel::where('voucher_type_id', $voucherType->id)
+            ->leftJoin('product', 'voucher_main.product_id', '=', 'product.id')
+            ->leftJoin('voucher_type', 'voucher_main.voucher_type_id', '=', 'voucher_type.id')
+            ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name', 'voucher_type.voucher_code')
             ->where('available', true)
             ->where('deplete_date', null)
             ->first();
