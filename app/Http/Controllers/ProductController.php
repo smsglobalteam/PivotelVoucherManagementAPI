@@ -14,7 +14,7 @@ class ProductController extends Controller
     //
     public function getAllProducts()
     {
-        $products = ProductModel::get();
+        $products = ProductModel::orderBy('created_at', 'desc')->get();
 
         return response([
             'message' => "All products displayed successfully",

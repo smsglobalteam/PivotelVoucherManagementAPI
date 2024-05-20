@@ -36,12 +36,13 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $vouchers = VoucherModel::get();
+        // $vouchers = VoucherModel::get();
 
         $vouchers = VoucherModel::query()
         ->leftJoin('product', 'voucher_main.product_id', '=', 'product.id')
         ->leftJoin('voucher_type', 'voucher_main.voucher_type_id', '=', 'voucher_type.id')
         ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name', 'voucher_type.voucher_code')
+        ->orderBy('created_at', 'desc')
         ->get();
 
         return response([
