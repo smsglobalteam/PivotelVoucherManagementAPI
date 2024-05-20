@@ -10,7 +10,7 @@ class HistoryLogsController extends Controller
     //
     public function getAllHistory()
     {
-        $historyLogs = HistoryLogsModel::get();
+        $historyLogs = HistoryLogsModel::orderBy('created_at', 'desc')->get();
 
         return response([
             'message' => "All history logs displayed successfully",
@@ -21,7 +21,9 @@ class HistoryLogsController extends Controller
 
     public function getHistoryLogsByTable($database_table)
     {
-        $historyLogs = HistoryLogsModel::where('database_table', $database_table)->get();
+        $historyLogs = HistoryLogsModel::where('database_table', $database_table)
+        ->orderBy('created_at', 'desc')
+        ->get();
 
         return response([
             'message' => "Table history logs displayed successfully",
