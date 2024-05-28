@@ -12,6 +12,7 @@ use App\Http\Controllers\VoucherHistoryController;
 use App\Http\Controllers\VoucherMainController;
 use App\Http\Controllers\VoucherTypeController;
 use App\Http\Controllers\WebServiceController;
+use App\Http\Controllers\WebServicePlansController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -93,6 +94,12 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/service', [WebServiceController::class, 'getAllApplication']);
     Route::get('/service/{id}', [WebServiceController::class, 'getApplicationByID']);
     Route::post('/service', [WebServiceController::class, 'submitApplication']);
+
+    //Web Service Plans API
+    Route::get('/servicePlans', [WebServicePlansController::class, 'getAllServicePlans']);
+    Route::post('/servicePlans', [WebServicePlansController::class, 'createNewServicePlan']);
+    Route::get('/servicePlans/{id}', [WebServicePlansController::class, 'getAllServicePlansByCode']);
+    Route::put('/servicePlans/{code}', [WebServicePlansController::class, 'editServicePlanByCode']);
 });
 
 

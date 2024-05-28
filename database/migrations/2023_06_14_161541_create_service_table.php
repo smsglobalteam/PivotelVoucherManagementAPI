@@ -53,9 +53,9 @@ return new class extends Migration
             $table->integer('card_ccv');
 
             //Plan Type
-            $table->string('satellite_network');
-            $table->string('hardware_type')->nullable();
-            $table->string('plan_family')->nullable();
+            $table->string('satellite_network');//group
+            $table->string('hardware_type')->nullable();//type
+            $table->string('plan_family')->nullable();//plan
             $table->string('sim_number');
             $table->string('imei_esn');
             $table->string('vessel_narrative');
