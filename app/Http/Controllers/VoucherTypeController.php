@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HistoryLogsModel;
+use App\Models\VoucherModel;
 use App\Models\VoucherTypeModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -115,6 +116,8 @@ class VoucherTypeController extends Controller
             ], 422);
         }
 
+        $voucherMain = VoucherModel::where('voucher_type_id', $voucherType->id)->get();
+
         $voucherType->update([
             'product_id' => $request->product_id,
             'status' => $request->status,
@@ -134,10 +137,13 @@ class VoucherTypeController extends Controller
             $voucherTypeHistory->save();
         }
 
+        VoucherModel::where('voucher_type_id', $voucherType->id)
+            ->update(['product_id' => $request->product_id]);
+
         return response([
             'message' => "Voucher type updated successfully",
             'return_code' => '0',
-            'results' => $voucherType
+            'results' => $voucherType,
         ], 201);
     }
 
