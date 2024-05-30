@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\ServicePlansModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class WebServicePlansController extends Controller
 {
     //
     public function getAllServicePlans()
     {
-        $servicePlans = ServicePlansModel::get();
+        $servicePlans = Cache::remember('servicePlans', 60 * 60, function () {
+            return ServicePlansModel::all();
+        });
 
         return response([
             'message' => "All service plans displayed successfully",
@@ -19,7 +22,6 @@ class WebServicePlansController extends Controller
             'results' => $servicePlans
         ], 200);
     }
-
 
     public function getAllServicePlansByCode($id)
     {
@@ -75,7 +77,7 @@ class WebServicePlansController extends Controller
             'test' => $startDate
         ], 201);
     }
-    
+
     public function editServicePlanByCode($code, Request $request)
     {
         $servicePlan = ServicePlansModel::where('code', $code)->first();
