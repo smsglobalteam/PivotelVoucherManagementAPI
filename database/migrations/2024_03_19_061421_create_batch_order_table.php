@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('batch_id')->unique();
             $table->bigInteger('product_id')->unsigned();
-            $table->bigInteger('voucher_type_id')->unsigned();
+            $table->bigInteger('voucher_type_id')->unsigned()->nullable();
             $table->integer('batch_count');
 
             $table->string('created_by')->nullable();

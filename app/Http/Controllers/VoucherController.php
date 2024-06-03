@@ -77,6 +77,8 @@ class VoucherController extends Controller
     {
         $voucherType = VoucherTypeModel::where('voucher_code', $voucher_code)->first();
 
+        // $product = ProductModel::where('id', $voucherType->product_id)->first();
+
         if (!$voucherType) {
             return response([
                 'message' => "The voucher code you entered is not valid.",
@@ -84,7 +86,7 @@ class VoucherController extends Controller
             ], 404);
         }
 
-        $voucher = VoucherModel::where('voucher_type_id', $voucherType->id)
+        $voucher = VoucherModel::where('voucher_main.product_id', $voucherType->product_id)
             ->leftJoin('product', 'voucher_main.product_id', '=', 'product.id')
             ->leftJoin('voucher_type', 'voucher_main.voucher_type_id', '=', 'voucher_type.id')
             ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name', 'voucher_type.voucher_code')
@@ -96,6 +98,7 @@ class VoucherController extends Controller
             return response([
                 'message' => "No available vouchers found",
                 'return_code' => '-210',
+                'test' => $voucherType->product_id,
             ], 200);
         }
 

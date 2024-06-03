@@ -23,7 +23,7 @@ class VoucherActivationController extends Controller
         $validator = Validator::make($request->all(), [
             'serial' => 'required',
             'product_id' => 'required',
-            'voucher_code' => 'required',
+            'voucher_code' => 'required|exists:voucher_type,voucher_code',
             'business_unit' => 'required',
             'service_reference' => 'required',
             'SIM' => 'nullable',
@@ -38,7 +38,6 @@ class VoucherActivationController extends Controller
 
         $voucher = VoucherModel::where('serial', $request->serial)->first();
         
-
         if (!$voucher) {
             $customErrors[] = [
                 "error_code" => "-7102",
@@ -48,7 +47,7 @@ class VoucherActivationController extends Controller
             // Clone voucher for history before modification
             $voucher_old = clone $voucher;
 
-            $voucherType = VoucherTypeModel::where('id', $voucher->voucher_type_id)->first();
+            $voucherType = VoucherTypeModel::where('voucher_code', $request->voucher_code)->first();
 
             if ($voucher->deplete_date != null) {
                 $customErrors[] = [
@@ -71,12 +70,13 @@ class VoucherActivationController extends Controller
                 ];
             }
 
-            if ($voucherType->voucher_code != $request->voucher_code) {
-                $customErrors[] = [
-                    "error_code" => "-8009",
-                    "error_field" => "voucher_code"
-                ];
-            }
+            // Disable this check as we are now using this function to directly add voucher_code to the voucher_main table
+            // if ($voucherType->voucher_code != $request->voucher_code) {
+            //     $customErrors[] = [
+            //         "error_code" => "-8009",
+            //         "error_field" => "voucher_code"
+            //     ];
+            // }
         }
 
         if (!empty($customErrorCodes) || !empty($customErrors)) {
@@ -98,6 +98,7 @@ class VoucherActivationController extends Controller
                 'available' => false,
                 'updated_by' => $request->attributes->get('preferred_username'),
             
+                'voucher_type_id' => $voucherType->id,
                 'service_reference' => $request->service_reference,
                 'business_unit' => $request->business_unit,
                 'SIM' => $request->SIM,
@@ -106,20 +107,6 @@ class VoucherActivationController extends Controller
             ], function ($value) {
                 return !is_null($value);
             }));
-
-            // $voucher->deplete_date = now();
-            // $voucher->available = false;
-            // $voucher->updated_by = $request->attributes->get('preferred_username');
-            // $voucher->updated_at = now();
-
-            // $voucher->service_reference = $request->service_reference;
-            // $voucher->business_unit = $request->business_unit;
-            // $voucher->IMEI = $request->IMEI;
-            // $voucher->SIMNarrative = $request->SIMNarrative;
-            // $voucher->PCN = $request->PCN;
-            // $voucher->SIMNo = $request->SIMNo;
-            // $voucher->IMSI = $request->IMSI;
-            // $voucher->save();
 
             $history = new HistoryLogsModel();
             $history->username = $request->attributes->get('preferred_username');

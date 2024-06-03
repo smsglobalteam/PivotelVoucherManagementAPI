@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('serial')->unique();
 
             $table->bigInteger('product_id')->unsigned();
-            $table->bigInteger('voucher_type_id')->unsigned();
+            $table->bigInteger('voucher_type_id')->unsigned()->nullable();
 
             $table->string('SIM')->nullable();
             $table->string('PUK')->unique();

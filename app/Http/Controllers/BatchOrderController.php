@@ -214,7 +214,7 @@ class BatchOrderController extends Controller
                 'batch_id' => 'required|string|unique:batch_order,batch_id',
                 'batch_count' => 'required|integer|min:1',
                 'product_id' => 'required|exists:product,id',
-                'voucher_type_id' => 'required|exists:voucher_type,id',
+                // 'voucher_type_id' => 'required|exists:voucher_type,id',
                 'file' => 'required|file|mimes:csv,txt',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -357,7 +357,7 @@ class BatchOrderController extends Controller
 
                 // 'product_code' => $product->product_code,
                 'product_id' => $product->id,
-                'voucher_type_id' => $request->voucher_type_id,
+                // 'voucher_type_id' => $request->voucher_type_id,
 
                 'created_by' => $request->attributes->get('preferred_username'),
 
@@ -403,7 +403,7 @@ class BatchOrderController extends Controller
         $batchOrder = BatchOrderModel::create([
             'batch_id' => $request->batch_id,
             'product_id' => $request->product_id,
-            'voucher_type_id' => $request->voucher_type_id,
+            // 'voucher_type_id' => $request->voucher_type_id,
             'batch_count' => $rowCount,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
