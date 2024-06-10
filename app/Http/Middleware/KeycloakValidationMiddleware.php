@@ -34,12 +34,20 @@ class KeycloakValidationMiddleware
 
                 if ($responseArray['active']) {
 
+                    //Check if user has the required role
+                    if (isset($responseArray['resource_access'][env('AUTH_DEPLOYMENT')])) {
+                        $request->attributes->add(['user_role' => $responseArray['resource_access'][env('AUTH_DEPLOYMENT')]]);
+                    } else {
+                        $request->attributes->add(['user_role' => []]);
+                    }
+
+                    $request->attributes->add(['preferred_username' => $responseArray['username']]);
+
                     // return response([
                     //     'message' => 'Token is valid.',
                     //     'username' => $responseArray['username'],
+                    //     'roles' => $request->attributes->get('user_role'),
                     // ], 200);
-
-                    $request->attributes->add(['preferred_username' => $responseArray['username']]);
 
                     return $next($request);
 
@@ -56,9 +64,12 @@ class KeycloakValidationMiddleware
                 }
             } else {
                 $request->attributes->add(['preferred_username' => 'auth-off']);
+                $request->attributes->add(['user_role' => []]);
+
                 // return response([
                 //     'message' => 'Off.',
                 // ], 200);
+                
                 return $next($request);
             }
         }

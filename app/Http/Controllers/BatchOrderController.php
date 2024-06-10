@@ -241,6 +241,8 @@ class BatchOrderController extends Controller
         }
         fclose($fileResource);
 
+        $csvContent = $this->cleanDataArray($csvContent);
+
         $isPivotelFormat = count($csvContent[0]) == 2;
         if ($isPivotelFormat) {
             $transformedContent = $this->transformCSVData($csvContent);

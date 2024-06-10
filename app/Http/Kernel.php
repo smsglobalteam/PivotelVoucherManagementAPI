@@ -26,6 +26,8 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
     
         'token-validation' => \App\Http\Middleware\KeycloakValidationMiddleware::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
+
     ];
 
     /**

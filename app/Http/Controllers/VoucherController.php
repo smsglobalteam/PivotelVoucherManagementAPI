@@ -21,16 +21,14 @@ class VoucherController extends Controller
         // $vouchers = Vouchers::get();
 
         $coindesk = Http::get('https://api.coindesk.com/v1/bpi/currentprice.json');
-        $news = Http::get('https://newsapi.org/v2/everything?domains=wsj.com&apiKey=af1c4f06fab94a0ab181ca1da3dfd9c6');
 
         $coindeskJSON = $coindesk->json();
-        $newsJSON = $news->json();
 
         return response([
-            'message' => "Current world update",
+            'message' => "Test API",
             'current_time' => Carbon::now(),
             'currency_values' => $coindeskJSON['bpi'],
-            'world_news' => $newsJSON['articles']
+            'roles' => $request->attributes->get('user_role'),
         ], 200);
     }
 
