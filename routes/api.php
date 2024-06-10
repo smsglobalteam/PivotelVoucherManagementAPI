@@ -57,7 +57,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::patch('/setInactive/{serial}', [VoucherController::class, 'setVoucherInactive'])->middleware('role:PVMS-management');
 
     //Voucher Type API
-    Route::get('/voucherType', [VoucherTypeController::class, 'getAllVoucherType'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/voucherType', [VoucherTypeController::class, 'getAllVoucherType'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::post('/voucherType', [VoucherTypeController::class, 'createNewVoucherType'])->middleware('role:PVMS-management');
     Route::get('/voucherType/{id}', [VoucherTypeController::class, 'getAllVoucherByID'])->middleware('role:PVMS-viewer,PVMS-management');
     Route::put('/voucherType/{id}', [VoucherTypeController::class, 'editVoucherTypeByCode'])->middleware('role:PVMS-management');
@@ -70,7 +70,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/voucher-histor{database_table}', [HistoryLogsController::class, 'getHistoryLogsByTable'])->middleware('role:PVMS-viewer,PVMS-management');
 
     //Product API
-    Route::get('/product', [ProductController::class, 'getAllProducts'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/product', [ProductController::class, 'getAllProducts'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::post('/product', [ProductController::class, 'createNewProduct'])->middleware('role:PVMS-management');
     Route::get('/product/{id}', [ProductController::class, 'getProductByID'])->middleware('role:PVMS-viewer,PVMS-management');
     Route::put('/product/{id}', [ProductController::class, 'editProductByID'])->middleware('role:PVMS-management');
