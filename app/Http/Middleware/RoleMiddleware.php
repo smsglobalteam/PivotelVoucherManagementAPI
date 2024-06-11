@@ -20,7 +20,7 @@ class RoleMiddleware
 
             if (is_null($userRoles) || empty($userRoles)) {
                 return response([
-                    'message' => 'Access error. User does not have roles assigned for this operation',
+                    'message' => 'User does not have access to PVMS resources.',
                     'return_code' => '-3',
                 ], 403);
             }
@@ -32,7 +32,7 @@ class RoleMiddleware
             }
 
             return response([
-                'message' => 'Access error. User does not have roles assigned for this operation',
+                'message' => 'User does not have the required role for this operation.',
                 'return_code' => '-4',
                 'roles' => $userRoles,
             ], 403);
