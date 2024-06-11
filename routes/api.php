@@ -39,13 +39,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 });
 
+//Token Validation API
+Route::get('/tokeninspect', [TokenController::class, 'tokeninspect']);
 
 Route::group(['middleware' => 'token-validation'], function () {
     //Example API
     Route::get('/example', [VoucherController::class, 'example'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
-
-    //Token Validation API
-    Route::get('/tokeninspect', [TokenController::class, 'tokeninspect']);
 
     // Voucher API
     Route::get('/getAllVouchers', [VoucherController::class, 'getAllVouchers'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
