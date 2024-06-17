@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertEmailGroupController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BatchOrderController;
 use App\Http\Controllers\ErrorCodesController;
@@ -48,8 +49,8 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     // Voucher API
     Route::get('/getAllVouchers', [VoucherController::class, 'getAllVouchers'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
-    Route::get('/getVoucher/{serial}', [VoucherController::class, 'getVoucher'])->middleware('role:PVMS-viewer,PVMS-management');
-    Route::get('/nextAvailable/{product_id}', [VoucherController::class, 'nextAvailable'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/getVoucher/{serial}', [VoucherController::class, 'getVoucher'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
+    Route::get('/nextAvailable/{product_id}', [VoucherController::class, 'nextAvailable'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::post('/createVoucher', [VoucherController::class, 'createVoucher'])->middleware('role:PVMS-management');
     Route::put('/editVoucher/{serial}', [VoucherController::class, 'editVoucher'])->middleware('role:PVMS-management');
     Route::patch('/setActive/{serial}', [VoucherController::class, 'setVoucherActive'])->middleware('role:PVMS-management');
@@ -58,7 +59,7 @@ Route::group(['middleware' => 'token-validation'], function () {
     //Voucher Type API
     Route::get('/voucherType', [VoucherTypeController::class, 'getAllVoucherType'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::post('/voucherType', [VoucherTypeController::class, 'createNewVoucherType'])->middleware('role:PVMS-management');
-    Route::get('/voucherType/{id}', [VoucherTypeController::class, 'getAllVoucherByID'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/voucherType/{id}', [VoucherTypeController::class, 'getAllVoucherByID'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::put('/voucherType/{id}', [VoucherTypeController::class, 'editVoucherTypeByCode'])->middleware('role:PVMS-management');
 
     //Voucher Activation API
@@ -71,14 +72,14 @@ Route::group(['middleware' => 'token-validation'], function () {
     //Product API
     Route::get('/product', [ProductController::class, 'getAllProducts'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::post('/product', [ProductController::class, 'createNewProduct'])->middleware('role:PVMS-management');
-    Route::get('/product/{id}', [ProductController::class, 'getProductByID'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/product/{id}', [ProductController::class, 'getProductByID'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::put('/product/{id}', [ProductController::class, 'editProductByID'])->middleware('role:PVMS-management');
     Route::delete('/product/{id}', [ProductController::class, 'deleteProductByID'])->middleware('role:PVMS-management');
 
     //Error Codes API
-    Route::get('/errorCodes', [ErrorCodesController::class, 'getAllErorrCodes'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/errorCodes', [ErrorCodesController::class, 'getAllErorrCodes'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::post('/errorCodes', [ErrorCodesController::class, 'createNewErrorCode'])->middleware('role:PVMS-management');
-    Route::get('/errorCodes/{id}', [ErrorCodesController::class, 'getErrorCodeByID'])->middleware('role:PVMS-viewer,PVMS-management');
+    Route::get('/errorCodes/{id}', [ErrorCodesController::class, 'getErrorCodeByID'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
     Route::put('/errorCodes/{id}', [ErrorCodesController::class, 'editErrorByCode'])->middleware('role:PVMS-management');
     Route::delete('/errorCodes/{id}', [ErrorCodesController::class, 'deleteErrorCodeByID'])->middleware('role:PVMS-management');
     Route::post('/errorMessages', [ErrorCodesController::class, 'getErrorMessages'])->middleware('role:PVMS-management');
@@ -93,14 +94,30 @@ Route::group(['middleware' => 'token-validation'], function () {
     //File testing
     Route::post('/testReq', [BatchOrderController::class, 'testReq'])->middleware('role:PVMS-management');
 
+    //Web Service Plans API
+    Route::put('/servicePlans/{code}', [WebServicePlansController::class, 'editServicePlanByCode']);
+    Route::post('/servicePlans', [WebServicePlansController::class, 'createNewServicePlan']);
+
+    //Voucher Type API
+    Route::get('/voucherType', [VoucherTypeController::class, 'getAllVoucherType'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
+    Route::post('/voucherType', [VoucherTypeController::class, 'createNewVoucherType'])->middleware('role:PVMS-management');
+    Route::get('/voucherType/{id}', [VoucherTypeController::class, 'getAllVoucherByID'])->middleware('role:PVMS-viewer,PVMS-management,PVMS-upload');
+    Route::put('/voucherType/{id}', [VoucherTypeController::class, 'editVoucherTypeByCode'])->middleware('role:PVMS-management');
+
+
+    //Alert Email Group API
+    Route::get('/alertEmailGroup', [AlertEmailGroupController::class, 'getAllAlertEmailGroup']);
+    Route::post('/alertEmailGroup', [AlertEmailGroupController::class, 'createNewAlertEmailGroup']);
+    Route::get('/alertEmailGroup/{id}', [AlertEmailGroupController::class, 'getAlertEmailGroup']);
+    Route::put('/alertEmailGroup/{id}', [AlertEmailGroupController::class, 'updateAlertEmailGroup']);
+    Route::delete('/alertEmailGroup/{id}', [AlertEmailGroupController::class, 'deleteAlertEmailGroup']);
+});
+
     //Web Service API
-    Route::get('/service', [WebServiceController::class, 'getAllApplication'])->middleware('role:PVMS-viewer,PVMS-management');
-    Route::get('/service/{id}', [WebServiceController::class, 'getApplicationByID'])->middleware('role:PVMS-viewer,PVMS-management');
-    Route::post('/service', [WebServiceController::class, 'submitApplication'])->middleware('role:PVMS-management');
+    Route::get('/service', [WebServiceController::class, 'getAllApplication']);
+    Route::get('/service/{id}', [WebServiceController::class, 'getApplicationByID']);
+    Route::post('/service', [WebServiceController::class, 'submitApplication']);
 
     //Web Service Plans API
-    Route::get('/servicePlans', [WebServicePlansController::class, 'getAllServicePlans'])->middleware('role:PVMS-viewer,PVMS-management');
-    Route::post('/servicePlans', [WebServicePlansController::class, 'createNewServicePlan'])->middleware('role:PVMS-management');
-    Route::get('/servicePlans/{id}', [WebServicePlansController::class, 'getAllServicePlansByCode'])->middleware('role:PVMS-viewer,PVMS-management');
-    Route::put('/servicePlans/{code}', [WebServicePlansController::class, 'editServicePlanByCode'])->middleware('role:PVMS-management');
-});
+    Route::get('/servicePlans', [WebServicePlansController::class, 'getAllServicePlans']);
+    Route::get('/servicePlans/{id}', [WebServicePlansController::class, 'getAllServicePlansByCode']);

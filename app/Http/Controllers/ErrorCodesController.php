@@ -293,6 +293,22 @@ class ErrorCodesController extends Controller
                     case 'voucher_code_reserved':
                         $errorCode = '-8009';
                         break;
+
+
+                        // Alert email group processing errors
+                    case 'name_required':
+                        $errorCode = '-9002';
+                        break;
+                    case 'email_required':
+                        $errorCode = '-9003';
+                        break;
+                    case 'email_email':
+                        $errorCode = '-9004';
+                        break;
+                    case 'email_unique':
+                        $errorCode = '-9005';
+                        break;
+
                 }
 
                 // Only add to the array if an error code was found
