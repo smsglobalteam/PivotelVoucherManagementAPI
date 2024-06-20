@@ -1,6 +1,6 @@
 @component("mail::message")
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous"> -->
 
 <style>
 /* Row container */
@@ -75,12 +75,12 @@
 </div>
 <br>
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:25px;">Your information</b>
-<p style="color:#87179d">
+<b style="font-size:20px;color:#1780E7;margin-top:25px;">Your information</b>
+<p style="color:#1780E7">
     If you’re an individual or sole trader you can skip the fields that are not applicable.
 </p>
 
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 
 <table style="width:100%;">
@@ -148,8 +148,8 @@
 </table>
 
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:35px;" class="form-header-style">Billing Information</b>
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<b style="font-size:20px;color:#1780E7;margin-top:35px;" class="form-header-style">Billing Information</b>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 <table style="width:100%;">
 <tr>
@@ -191,8 +191,8 @@
 </table>
 
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:35px;" class="form-header-style">Shipping Address</b>
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<b style="font-size:20px;color:#1780E7;margin-top:35px;" class="form-header-style">Shipping Address</b>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 <table style="width:100%;">
 <tr>
@@ -230,11 +230,11 @@
 
 {{-- CREDIT CARD --}}
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:35px;" class="form-header-style">Credit Card</b>
-<p style="color:#87179d">
+<b style="font-size:20px;color:#1780E7;margin-top:35px;" class="form-header-style">Credit Card</b>
+<p style="color:#1780E7">
   Your credit card will be charged on the due date shown on your invoice for monthly services, or at the time of voucher recharge.
 </p>
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 <table style="width:100%;">
 <tr>
@@ -272,8 +272,8 @@
 
 {{-- YOUR IDENTIFICATION --}}
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:35px;" class="form-header-style">Plan Type</b>
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<b style="font-size:20px;color:#1780E7;margin-top:35px;" class="form-header-style">Plan Type</b>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 <table style="width:100%;">
 <tr>
@@ -326,8 +326,8 @@
 
 {{-- YOUR IDENTIFICATION --}}
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:35px;" class="form-header-style">Vessel Information</b>
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<b style="font-size:20px;color:#1780E7;margin-top:35px;" class="form-header-style">Vessel Information</b>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 <table style="width:100%;">
 <tr>
@@ -420,8 +420,8 @@
 
 {{-- EMERGENCY CONTACT --}}
 <br>
-<b style="font-size:20px;color:#87179d;margin-top:35px;" class="form-header-style">Vessel Emergency Information</b>
-<div style="border:none; height:4px; background-color:#87179d;"></div>
+<b style="font-size:20px;color:#1780E7;margin-top:35px;" class="form-header-style">Vessel Emergency Information</b>
+<div style="border:none; height:4px; background-color:#1780E7;"></div>
 
 <table style="width:100%;">
 <tr>
