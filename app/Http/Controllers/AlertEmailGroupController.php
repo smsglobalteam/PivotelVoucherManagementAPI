@@ -32,6 +32,14 @@ class AlertEmailGroupController extends Controller
         $alertEmailGroup = AlertEmailGroupModel::get();
         $alertProducts = [];
 
+        if($alertEmailGroup == null || $alertEmailGroup->isEmpty()) 
+        {
+            return response([
+                'message' => "No alert email group members found, add members to send alert emails",
+                'return_code' => '-101',
+            ], 400);
+        }
+
         foreach ($products as $product) {
             if ($product->threshold_alert > $product->available_voucher_count) {
                 $alertProducts[] = $product;
@@ -93,6 +101,14 @@ class AlertEmailGroupController extends Controller
 
         $alertEmailGroup = AlertEmailGroupModel::get();
         $alertProducts = [];
+
+        if($alertEmailGroup == null || $alertEmailGroup->isEmpty()) 
+        {
+            return response([
+                'message' => "No alert email group members found, add members to send alert emails",
+                'return_code' => '-101',
+            ], 400);
+        }
 
         foreach ($products as $product) {
             if ($product->threshold_alert > $product->available_voucher_count) {
