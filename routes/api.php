@@ -111,6 +111,13 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/alertEmailGroup/{id}', [AlertEmailGroupController::class, 'getAlertEmailGroup']);
     Route::put('/alertEmailGroup/{id}', [AlertEmailGroupController::class, 'updateAlertEmailGroup']);
     Route::delete('/alertEmailGroup/{id}', [AlertEmailGroupController::class, 'deleteAlertEmailGroup']);
+
+    //Alert Email Sender
+    Route::get('/triggerAlert', [AlertEmailGroupController::class, 'triggerAlert']);
+    Route::get('/alertNotification', [AlertEmailGroupController::class, 'alertNotification']);
+
+    //Alert Email Logs
+    Route::get('/alertEmailLogs', [AlertEmailGroupController::class, 'getAllAlertEmailLogs']);
 });
 
     //Web Service API
@@ -121,3 +128,6 @@ Route::group(['middleware' => 'token-validation'], function () {
     //Web Service Plans API
     Route::get('/servicePlans', [WebServicePlansController::class, 'getAllServicePlans']);
     Route::get('/servicePlans/{id}', [WebServicePlansController::class, 'getAllServicePlansByCode']);
+
+    //Alert Email Sender
+    Route::get('/automatedAlert/{key}', [AlertEmailGroupController::class, 'automatedAlert']);

@@ -7,16 +7,187 @@ use App\Models\HistoryLogsModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\ErrorCodesController;
+use App\Models\ProductModel;
+use Illuminate\Support\Facades\DB;
+use App\Mail\ThresholdAlertMail;
+use App\Models\AlertEmailLogsModel;
+use Illuminate\Support\Facades\Mail;
+use PhpParser\Node\Stmt\Else_;
 
 class AlertEmailGroupController extends Controller
 {
-    //
+
+    public function triggerAlert(Request $request)
+    {
+        $products = ProductModel::orderBy('created_at', 'desc')
+            ->leftJoin('voucher_main', function ($join) {
+                $join->on('product.id', '=', 'voucher_main.product_id')
+                    ->where('voucher_main.available', true)
+                    ->whereNull('voucher_main.deplete_date');
+            })
+            ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
+            ->groupBy('product.id')
+            ->get();
+
+        $alertEmailGroup = AlertEmailGroupModel::get();
+        $alertProducts = [];
+
+        foreach ($products as $product) {
+            if ($product->threshold_alert > $product->available_voucher_count) {
+                $alertProducts[] = $product;
+            }
+        }
+
+        if (!empty($alertProducts)) {
+            foreach ($alertEmailGroup as $recipient) {
+                try {
+                    Mail::to($recipient->email)->send(new ThresholdAlertMail($alertProducts));
+                } catch (\Exception $e) {
+                    return response([
+                        'message' => 'Email was not sent. An error occurred.',
+                        'error' => $e->getMessage()
+                    ], 400);
+                }
+            }
+        }
+
+        if (!empty($alertProducts)) {
+            $alertEmailLog = new AlertEmailLogsModel();
+            $alertEmailLog->call_method = "manual";
+            $alertEmailLog->call_by = $request->attributes->get('preferred_username');
+            $alertEmailLog->email = json_encode($alertEmailGroup->pluck('email'));
+            $alertEmailLog->alerted_products = json_encode($alertProducts);
+            $alertEmailLog->save();
+
+            return response([
+                'message' => "Alert emails sent successfully",
+                'return_code' => '0',
+                'alerted_vouchers' => $alertProducts
+            ], 200);
+        } else {
+            return response([
+                'message' => "All vouchers are above threshold",
+                'return_code' => '0',
+            ], 200);
+        }
+    }
+
+    public function automatedAlert($key)
+    {
+        if ($key != env('ALERT_PUBLIC_KEY')) {
+            return response([
+                'message' => "Unauthorized access",
+                'return_code' => '-101',
+            ], 401);
+        }
+
+        $products = ProductModel::orderBy('created_at', 'desc')
+            ->leftJoin('voucher_main', function ($join) {
+                $join->on('product.id', '=', 'voucher_main.product_id')
+                    ->where('voucher_main.available', true)
+                    ->whereNull('voucher_main.deplete_date');
+            })
+            ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
+            ->groupBy('product.id')
+            ->get();
+
+        $alertEmailGroup = AlertEmailGroupModel::get();
+        $alertProducts = [];
+
+        foreach ($products as $product) {
+            if ($product->threshold_alert > $product->available_voucher_count) {
+                $alertProducts[] = $product;
+            }
+        }
+
+        if (!empty($alertProducts)) {
+            foreach ($alertEmailGroup as $recipient) {
+                try {
+                    Mail::to($recipient->email)->send(new ThresholdAlertMail($alertProducts));
+                } catch (\Exception $e) {
+                    return response([
+                        'message' => 'Email was not sent. An error occurred.',
+                        'error' => $e->getMessage()
+                    ], 400);
+                }
+            }
+        }
+
+        if (!empty($alertProducts)) {
+            $alertEmailLog = new AlertEmailLogsModel();
+            $alertEmailLog->call_method = "automated";
+            $alertEmailLog->call_by = "automated_system";
+            $alertEmailLog->email = json_encode($alertEmailGroup->pluck('email'));
+            $alertEmailLog->alerted_products = json_encode($alertProducts);
+            $alertEmailLog->save();
+
+            return response([
+                'message' => "Alert emails sent successfully",
+                'return_code' => '0',
+                'alerted_vouchers' => $alertProducts
+            ], 200);
+        } else {
+            return response([
+                'message' => "All vouchers are above threshold",
+                'return_code' => '0',
+            ], 200);
+        }
+    }
+
+    public function alertNotification()
+    {
+        $products = ProductModel::orderBy('created_at', 'desc')
+            ->leftJoin('voucher_main', function ($join) {
+                $join->on('product.id', '=', 'voucher_main.product_id')
+                    ->where('voucher_main.available', true)
+                    ->whereNull('voucher_main.deplete_date');
+            })
+            ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
+            ->groupBy('product.id')
+            ->get();
+
+        $alertEmailGroup = AlertEmailGroupModel::get();
+        $alertProducts = [];
+
+        foreach ($products as $product) {
+            if ($product->threshold_alert > $product->available_voucher_count) {
+                $alertProducts[] = $product;
+            }
+        }
+
+        if (!empty($alertProducts)) {
+
+            return response([
+                'message' => "Vouchers below threshold",
+                'return_code' => '0',
+                'alerted_vouchers' => $alertProducts
+            ], 200);
+        } else {
+            return response([
+                'message' => "All vouchers are above threshold",
+                'return_code' => '0',
+                'alerted_vouchers' => $alertProducts
+            ], 200);
+        }
+    }
+
+    public function getAllAlertEmailLogs()
+    {
+        $alertEmailLog = AlertEmailLogsModel::get();
+
+        return response([
+            'message' => "All alert email logs displayed successfully",
+            'return_code' => '0',
+            'results' => $alertEmailLog
+        ], 200);
+    }
+
     public function getAllAlertEmailGroup()
     {
         $alertEmailGroup = AlertEmailGroupModel::get();
 
         return response([
-            'message' => "All error codes displayed successfully",
+            'message' => "All alert email group members displayed successfully",
             'return_code' => '0',
             'results' => $alertEmailGroup
         ], 200);
@@ -27,7 +198,7 @@ class AlertEmailGroupController extends Controller
         $alertEmailGroup = AlertEmailGroupModel::where('id', $id)->first();
 
         return response([
-            'message' => "Error code displayed successfully",
+            'message' => "Alert email group member displayed successfully",
             'return_code' => '0',
             'results' => $alertEmailGroup
         ], 200);
@@ -151,5 +322,4 @@ class AlertEmailGroupController extends Controller
             'results' => $alertEmailGroup
         ], 200);
     }
-
 }

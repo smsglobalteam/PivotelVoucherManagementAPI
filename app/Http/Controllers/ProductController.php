@@ -8,13 +8,22 @@ use App\Models\ProductModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\ErrorCodesController;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
     //
     public function getAllProducts()
     {
-        $products = ProductModel::orderBy('created_at', 'desc')->get();
+        $products = ProductModel::orderBy('created_at', 'desc')
+            ->leftJoin('voucher_main', function ($join) {
+                $join->on('product.id', '=', 'voucher_main.product_id')
+                    ->where('voucher_main.available', true)
+                    ->whereNull('voucher_main.deplete_date');
+            })
+            ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
+            ->groupBy('product.id')
+            ->get();
 
         return response([
             'message' => "All products displayed successfully",
@@ -46,6 +55,7 @@ class ProductController extends Controller
             'product_code' => 'required|regex:/^\S*$/u|unique:product,product_code',
             'product_name' => 'required|unique:product,product_name',
             'supplier' => 'required',
+            'threshold_alert' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -65,6 +75,7 @@ class ProductController extends Controller
             'product_code' => $request->product_code,
             'product_name' => $request->product_name,
             'supplier' => $request->supplier,
+            'threshold_alert' => $request->threshold_alert,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
@@ -101,6 +112,7 @@ class ProductController extends Controller
             'product_name' => 'required|unique:product,product_name,' . $product->id,
             'status' => 'required|boolean',
             'supplier' => 'required',
+            'threshold_alert' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -122,6 +134,7 @@ class ProductController extends Controller
             'product_name' => $request->product_name,
             'status' => $request->status,
             'supplier' => $request->supplier,
+            'threshold_alert' => $request->threshold_alert,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 
