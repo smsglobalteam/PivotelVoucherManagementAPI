@@ -264,7 +264,7 @@ class AlertEmailGroupController extends Controller
     public function updateAlertEmailGroup(Request $request, $id, ErrorCodesController $errorCodesController)
     {
         $alertEmailGroup = AlertEmailGroupModel::where('id', $id)->first();
-
+        
         if (!$alertEmailGroup) {
             return response([
                 'message' => "Alert email group member not found",
@@ -272,6 +272,8 @@ class AlertEmailGroupController extends Controller
 
             ], 404);
         }
+
+        $alertEmailGroup_old = clone $alertEmailGroup;
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
@@ -301,7 +303,7 @@ class AlertEmailGroupController extends Controller
         $history->transaction = "Updated Alert Email Group";
         $history->database_table = "alert_email_group";
         $history->old_data = json_encode($alertEmailGroup->toArray());
-        $history->new_data = json_encode($request->all());
+        $history->new_data = json_encode($alertEmailGroup_old->toArray());
         $history->save();
 
         return response([

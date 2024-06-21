@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertEmailConfigurationController;
 use App\Http\Controllers\AlertEmailGroupController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\BatchOrderController;
@@ -118,6 +119,9 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     //Alert Email Logs
     Route::get('/alertEmailLogs', [AlertEmailGroupController::class, 'getAllAlertEmailLogs']);
+
+    //Alert Email Configuration
+    Route::put('/alertEmailConfiguration/{id}', [AlertEmailConfigurationController::class, 'updateEmailAlertConfiguration']);
 });
 
     //Web Service API
@@ -131,3 +135,7 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     //Alert Email Sender
     Route::get('/automatedAlert/{key}', [AlertEmailGroupController::class, 'automatedAlert']);
+
+    //Alert Email Configuration
+    Route::get('/alertEmailConfiguration/{key}', [AlertEmailConfigurationController::class, 'getAllEmailAlertConfiguration']);
+    
