@@ -10,7 +10,7 @@ use App\Models\HistoryLogsModel;
 class AlertEmailConfigurationController extends Controller
 {
     //
-    public function getAllEmailAlertConfiguration($key)
+    public function getConfigurationPublic($key)
     {
         if ($key != env('ALERT_PUBLIC_KEY')) {
             return response([
@@ -19,6 +19,17 @@ class AlertEmailConfigurationController extends Controller
             ], 401);
         }
 
+        $alertEmailConfiguration = AlertEmailConfigurationModel::get();
+
+        return response([
+            'message' => "All alert email configuration displayed successfully",
+            'return_code' => '0',
+            'results' => $alertEmailConfiguration
+        ], 200);
+    }
+
+    public function getAllEmailAlertConfiguration()
+    {
         $alertEmailConfiguration = AlertEmailConfigurationModel::get();
 
         return response([

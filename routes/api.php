@@ -122,6 +122,7 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     //Alert Email Configuration
     Route::put('/alertEmailConfiguration/{id}', [AlertEmailConfigurationController::class, 'updateEmailAlertConfiguration']);
+    Route::get('/alertEmailConfiguration', [AlertEmailConfigurationController::class, 'getAllEmailAlertConfiguration']);
 });
 
     //Web Service API
@@ -137,5 +138,5 @@ Route::group(['middleware' => 'token-validation'], function () {
     Route::get('/automatedAlert/{key}', [AlertEmailGroupController::class, 'automatedAlert']);
 
     //Alert Email Configuration
-    Route::get('/alertEmailConfiguration/{key}', [AlertEmailConfigurationController::class, 'getAllEmailAlertConfiguration']);
+    Route::get('/alertEmailConfiguration/{key}', [AlertEmailConfigurationController::class, 'getConfigurationPublic']);
     

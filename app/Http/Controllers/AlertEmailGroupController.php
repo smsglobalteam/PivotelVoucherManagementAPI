@@ -189,7 +189,7 @@ class AlertEmailGroupController extends Controller
 
     public function getAllAlertEmailLogs()
     {
-        $alertEmailLog = AlertEmailLogsModel::get();
+        $alertEmailLog = AlertEmailLogsModel::orderBy('created_at', 'desc')->get();
 
         return response([
             'message' => "All alert email logs displayed successfully",
