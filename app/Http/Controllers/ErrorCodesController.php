@@ -310,6 +310,12 @@ class ErrorCodesController extends Controller
                 case 'threshold_alert_integer':
                     $errorCode = '-9006';
                     break;
+                case 'configuration_value_required':
+                    $errorCode = '-9007';
+                    break;
+                case 'configuration_value_integer':
+                    $errorCode = '-9008';
+                    break;
 
                 default:
                     // Handle unmapped errors with a default code

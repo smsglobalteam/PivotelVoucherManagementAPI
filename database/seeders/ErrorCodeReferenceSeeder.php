@@ -85,6 +85,8 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-9004', 'error_message' => 'Email format is invalid.', 'error_description' => ''],
             ['error_code' => '-9005', 'error_message' => 'Email must be unique.', 'error_description' => ''],
             ['error_code' => '-9006', 'error_message' => 'Threshold must be an integer.', 'error_description' => ''],
+            ['error_code' => '-9007', 'error_message' => 'Configuration value is required.', 'error_description' => ''],
+            ['error_code' => '-9008', 'error_message' => 'Configuration value must be an integer.', 'error_description' => ''],
         ];
 
         foreach ($errorCodes as $code) {
