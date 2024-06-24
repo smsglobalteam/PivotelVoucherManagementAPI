@@ -10,13 +10,28 @@ use App\Models\VoucherModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class BatchOrderController extends Controller
 {
     //
     public function getAllBatchOrder()
     {
-        $batchOrder = BatchOrderModel::with('voucher')->get();
+        $batchOrder = BatchOrderModel::with('voucher')
+        ->leftJoin('product', 'batch_order.product_id', '=', 'product.id')
+        ->orderBy('created_at', 'desc')
+        ->leftJoin('voucher_main', function ($join) {
+            $join->on('batch_order.product_id', '=', 'voucher_main.product_id')
+                ->where('voucher_main.available', true)
+                ->whereNull('voucher_main.deplete_date');
+        })
+        ->select('batch_order.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'), 'product.threshold_alert')
+        ->groupBy(
+            'batch_order.id',
+            'product.product_name',
+            'product.threshold_alert'
+        )
+        ->get();
 
         return response([
             'message' => "All batch order successfully",

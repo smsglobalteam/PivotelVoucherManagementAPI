@@ -7,6 +7,7 @@ use App\Models\VoucherModel;
 use App\Models\VoucherTypeModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class VoucherTypeController extends Controller
 {
@@ -14,9 +15,24 @@ class VoucherTypeController extends Controller
     public function getAllVoucherType()
     {
         $voucherType = VoucherTypeModel::query()
-        ->leftJoin('product', 'voucher_type.product_id', '=', 'product.id')
-        ->select('voucher_type.*', 'product.product_name as product_name')
-        ->get();
+            ->leftJoin('product', 'voucher_type.product_id', '=', 'product.id')
+            ->leftJoin('voucher_main', function ($join) {
+                $join->on('product.id', '=', 'voucher_main.product_id')
+                    ->where('voucher_main.available', '=', true)
+                    ->whereNull('voucher_main.deplete_date');
+            })
+            ->select(
+                'voucher_type.*',
+                'product.product_name as product_name',
+                DB::raw('COUNT(voucher_main.id) as available_voucher_count'),
+                'product.threshold_alert'
+            )
+            ->groupBy(
+                'voucher_type.id',
+                'product.product_name',
+                'product.threshold_alert'
+            )
+            ->get();
 
         return response([
             'message' => "All voucher type displayed successfully",
@@ -146,5 +162,4 @@ class VoucherTypeController extends Controller
             'results' => $voucherType,
         ], 201);
     }
-
 }
