@@ -50,8 +50,8 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-7004', 'error_message' => 'The PUK is required.', 'error_description' => 'PUK is necessary for SIM card activation.'],
             ['error_code' => '-7005', 'error_message' => 'The PUK must be unique.', 'error_description' => 'PUK must be unique to ensure secure access.'],
             ['error_code' => '-7006', 'error_message' => 'The value must be an integer.', 'error_description' => 'Numerical input expected to be an integer.'],
-            ['error_code' => '-7007', 'error_message' => 'The expire date format is invalid.', 'error_description' => 'Date must be in a recognized format, typically YYYY-MM-DD.'],
-            ['error_code' => '-7008', 'error_message' => 'The expire date must be after today.', 'error_description' => 'Provided expire date must be a future date.'],
+            ['error_code' => '-7007', 'error_message' => 'The expiry date format is invalid.', 'error_description' => 'Date must be in a recognized format, typically YYYY-MM-DD.'],
+            ['error_code' => '-7008', 'error_message' => 'The expiry date must be after today.', 'error_description' => 'Provided expire date must be a future date.'],
             ['error_code' => '-7009', 'error_message' => 'The IMEI must be a string.', 'error_description' => 'IMEI should be entered as a string of digits.'],
             ['error_code' => '-7010', 'error_message' => 'The SIMNarrative must be a string.', 'error_description' => 'Narrative input must be textual.'],
             ['error_code' => '-7011', 'error_message' => 'The MSISDN must be a string.', 'error_description' => 'MSISDN values are expected to be strings.'],
@@ -61,6 +61,7 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-7015', 'error_message' => 'The business unit must be a string.', 'error_description' => 'Business unit descriptions must be provided in text format.'],
             ['error_code' => '-7016', 'error_message' => 'The service reference is required.', 'error_description' => 'Missing service reference in the request.'],
             ['error_code' => '-7017', 'error_message' => 'The business unit required.', 'error_description' => 'Missing business unit in the request.'],
+            ['error_code' => '-7018', 'error_message' => 'The expiry date is required.', 'error_description' => ''],
 
             //Voucher Activation
             ['error_code' => '-7102', 'error_message' => 'Voucher under that serial not found.', 'error_description' => 'No matching serial for any voucher.'],

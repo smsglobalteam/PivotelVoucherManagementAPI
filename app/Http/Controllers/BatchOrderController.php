@@ -229,6 +229,7 @@ class BatchOrderController extends Controller
                 'batch_id' => 'required|string|unique:batch_order,batch_id',
                 'batch_count' => 'required|integer|min:1',
                 'product_id' => 'required|exists:product,id',
+                'expiry_date' => 'nullable|date_format:Y-m-d',
                 // 'voucher_type_id' => 'required|exists:voucher_type,id',
                 'file' => 'required|file|mimes:csv,txt',
             ]);
@@ -375,6 +376,7 @@ class BatchOrderController extends Controller
                 // 'product_code' => $product->product_code,
                 'product_id' => $product->id,
                 // 'voucher_type_id' => $request->voucher_type_id,
+                'expiry_date' => $request->expiry_date,
 
                 'created_by' => $request->attributes->get('preferred_username'),
 
@@ -421,6 +423,7 @@ class BatchOrderController extends Controller
             'batch_id' => $request->batch_id,
             'product_id' => $request->product_id,
             // 'voucher_type_id' => $request->voucher_type_id,
+            'expiry_date' => $request->expiry_date,
             'batch_count' => $rowCount,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
