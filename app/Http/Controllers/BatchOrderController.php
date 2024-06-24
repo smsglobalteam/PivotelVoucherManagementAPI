@@ -18,20 +18,24 @@ class BatchOrderController extends Controller
     public function getAllBatchOrder()
     {
         $batchOrder = BatchOrderModel::with('voucher')
-        ->leftJoin('product', 'batch_order.product_id', '=', 'product.id')
-        ->orderBy('created_at', 'desc')
-        ->leftJoin('voucher_main', function ($join) {
-            $join->on('batch_order.product_id', '=', 'voucher_main.product_id')
-                ->where('voucher_main.available', true)
-                ->whereNull('voucher_main.deplete_date');
-        })
-        ->select('batch_order.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'), 'product.threshold_alert')
-        ->groupBy(
-            'batch_order.id',
-            'product.product_name',
-            'product.threshold_alert'
-        )
-        ->get();
+            ->leftJoin('product', 'batch_order.product_id', '=', 'product.id')
+            ->orderBy('created_at', 'desc')
+            ->leftJoin('voucher_main', function ($join) {
+                $join->on('batch_order.product_id', '=', 'voucher_main.product_id')
+                    ->where('voucher_main.available', true)
+                    ->whereNull('voucher_main.deplete_date')
+                    ->where(function ($query) {
+                        $query->whereNull('voucher_main.expiry_date')
+                            ->orWhere('voucher_main.expiry_date', '>', now());
+                    });
+            })
+            ->select('batch_order.*', 'product.threshold_alert', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
+            ->groupBy(
+                'batch_order.id',
+                'product.product_name',
+                'product.threshold_alert'
+            )
+            ->get();
 
         return response([
             'message' => "All batch order successfully",
@@ -158,7 +162,8 @@ class BatchOrderController extends Controller
         ], 200);
     }
 
-    public function transformErrorRows($validator, $rowNumber) {
+    public function transformErrorRows($validator, $rowNumber)
+    {
         $errors = [];
         foreach ($validator->errors()->getMessages() as $field => $messages) {
             foreach ($messages as $message) {
@@ -351,16 +356,16 @@ class BatchOrderController extends Controller
 
             if ($validator->fails()) {
                 $rowErrorCurrent = $errorCodesController->mapValidationErrorsToCustomCodes($validator);
-            
+
                 // Get the current row's error messages
                 $currentRowErrors = $errorCodesController->getErrorMessagesFromCodes($rowErrorCurrent);
-            
+
                 // Store the current row's errors under the row counter key
                 $csvDuplicates[$rowCount] = $currentRowErrors;
-            
+
                 continue; // Skip further processing for this row
             }
-            
+
 
             // Store valid data in an array
             $validData[] = [
@@ -382,7 +387,7 @@ class BatchOrderController extends Controller
 
             ];
         }
-        
+
 
         if ($request->batch_count != count($transformedContent) - 1) {
             $customErrors[] = [

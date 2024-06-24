@@ -90,6 +90,10 @@ class VoucherController extends Controller
             ->select('voucher_main.*', 'product.product_name', 'voucher_type.voucher_name', 'voucher_type.voucher_code')
             ->where('available', true)
             ->where('deplete_date', null)
+            ->where(function ($query) {
+                $query->whereNull('voucher_main.expiry_date')
+                    ->orWhere('voucher_main.expiry_date', '>', now());
+            })
             ->first();
 
         if (!$voucher) {

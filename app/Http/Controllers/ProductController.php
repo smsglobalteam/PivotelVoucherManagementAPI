@@ -19,7 +19,11 @@ class ProductController extends Controller
             ->leftJoin('voucher_main', function ($join) {
                 $join->on('product.id', '=', 'voucher_main.product_id')
                     ->where('voucher_main.available', true)
-                    ->whereNull('voucher_main.deplete_date');
+                    ->whereNull('voucher_main.deplete_date')
+                    ->where(function ($query) {
+                        $query->whereNull('voucher_main.expiry_date')
+                            ->orWhere('voucher_main.expiry_date', '>', now());
+                    });
             })
             ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
             ->groupBy('product.id')

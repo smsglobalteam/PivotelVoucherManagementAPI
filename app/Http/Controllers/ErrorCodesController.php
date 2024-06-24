@@ -233,10 +233,10 @@ class ErrorCodesController extends Controller
                 case 'value_integer':
                     $errorCode = '-7006';
                     break;
-                case 'expire_date_date_format':
+                case 'expiry_date_date_format':
                     $errorCode = '-7007';
                     break;
-                case 'expire_date_after':
+                case 'expiry_date_after':
                     $errorCode = '-7008';
                     break;
                 case 'imei_string':
@@ -265,6 +265,9 @@ class ErrorCodesController extends Controller
                     break;
                 case 'business_unit_required':
                     $errorCode = '-7017';
+                    break;
+                case 'expiry_date_required':
+                    $errorCode = '-7018';
                     break;
                 // Add other cases as needed
 

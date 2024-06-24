@@ -37,7 +37,7 @@ class VoucherActivationController extends Controller
         }
 
         $voucher = VoucherModel::where('serial', $request->serial)->first();
-        
+
         if (!$voucher) {
             $customErrors[] = [
                 "error_code" => "-7102",
@@ -53,6 +53,13 @@ class VoucherActivationController extends Controller
                 $customErrors[] = [
                     "error_code" => "-7103",
                     "error_field" => "deplete_date"
+                ];
+            }
+
+            if ($voucher->expiry_date && $voucher->expiry_date < now()) {
+                $customErrors[] = [
+                    "error_code" => "-7104",
+                    "error_field" => "expiry_date"
                 ];
             }
 
@@ -97,7 +104,7 @@ class VoucherActivationController extends Controller
                 'deplete_date' => now(),
                 'available' => false,
                 'updated_by' => $request->attributes->get('preferred_username'),
-            
+
                 'voucher_type_id' => $voucherType->id,
                 'service_reference' => $request->service_reference,
                 'business_unit' => $request->business_unit,
