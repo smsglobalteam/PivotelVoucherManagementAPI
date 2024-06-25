@@ -186,6 +186,9 @@ class ErrorCodesController extends Controller
                 case 'status_boolean':
                     $errorCode = '-5012';
                     break;
+                case 'order_amount_integer':
+                    $errorCode = '-5013';
+                    break;
 
                 // Batch order processing errors
                 case 'batch_id_required':

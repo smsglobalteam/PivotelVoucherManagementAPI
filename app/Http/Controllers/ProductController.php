@@ -60,6 +60,7 @@ class ProductController extends Controller
             'product_name' => 'required|unique:product,product_name',
             'supplier' => 'required',
             'threshold_alert' => 'nullable|integer',
+            'order_amount' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -80,6 +81,7 @@ class ProductController extends Controller
             'product_name' => $request->product_name,
             'supplier' => $request->supplier,
             'threshold_alert' => $request->threshold_alert,
+            'order_amount' => $request->order_amount,
             'created_by' => $request->attributes->get('preferred_username'),
         ]);
 
@@ -117,6 +119,7 @@ class ProductController extends Controller
             'status' => 'required|boolean',
             'supplier' => 'required',
             'threshold_alert' => 'nullable|integer',
+            'order_amount' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -139,6 +142,7 @@ class ProductController extends Controller
             'status' => $request->status,
             'supplier' => $request->supplier,
             'threshold_alert' => $request->threshold_alert,
+            'order_amount' => $request->order_amount,
             'updated_by' => $request->attributes->get('preferred_username'),
         ]);
 

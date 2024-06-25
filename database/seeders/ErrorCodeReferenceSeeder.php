@@ -28,6 +28,7 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-5010', 'error_message' => 'The product supplier is required.', 'error_description' => 'Missing product supplier information.'],
             ['error_code' => '-5011', 'error_message' => 'The status is required.', 'error_description' => 'Missing product status information.'],
             ['error_code' => '-5012', 'error_message' => 'The status must be true(1) or false(0).', 'error_description' => 'Non boolean product status value.'],
+            ['error_code' => '-5013', 'error_message' => 'The order amount must be an integer', 'error_description' => ''],
             
             //Batch Order Errors
             ['error_code' => '-6002', 'error_message' => 'The batch ID is required.', 'error_description' => 'Missing batch ID in the request.'],
