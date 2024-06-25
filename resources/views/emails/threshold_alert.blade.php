@@ -1,26 +1,3 @@
-<style>
-    .button-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
-
-    button {
-        color: #ffffff;
-        background-color: #1a1b41;
-        font-size: 16px;
-        border: 0px solid #2d63c8;
-        border-radius: 7px;
-        padding: 10px 10px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        color: #ffffff;
-        background-color: #1780e7;
-    }
-</style>
-
 @component('mail::message')
 # Threshold Alerts
 
@@ -28,6 +5,7 @@
 
 @foreach ($products as $product)
 ## Threshold Alert for Product: {{ $product->product_name }}
+## Reload amount: {{ $product->order_amount }}
 - **Threshold Level**: {{ $product->threshold_alert }}
 - **Available Vouchers Left**: {{ $product->available_voucher_count }}
 @endforeach
@@ -36,7 +14,7 @@
     <tr>
         <td align="center">
             <a href="{{ env('ALERT_EMAIL_URL') }}" target="_blank">
-                <button type="button" name="linkBtn">Check Vouchers</button>
+                <button type="button" name="linkBtn" style="color: #ffffff; background-color: #1a1b41; font-size: 16px; border: 0px solid #2d63c8; border-radius: 7px; padding: 10px 10px; cursor: pointer;">Check Vouchers</button>
             </a>
         </td>
     </tr>
