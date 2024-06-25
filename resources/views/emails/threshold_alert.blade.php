@@ -5,7 +5,7 @@
 
 @foreach ($products as $product)
 ## Threshold Alert for Product: {{ $product->product_name }}
-## Reload amount: {{ $product->order_amount }}
+## Order amount: {{ $product->order_amount }}
 - **Threshold Level**: {{ $product->threshold_alert }}
 - **Available Vouchers Left**: {{ $product->available_voucher_count }}
 @endforeach
