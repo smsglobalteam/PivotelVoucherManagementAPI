@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+
+class ExpiredBatchOrder extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public $products;
+
+    /**
+     * Create a new message instance.
+     *
+     * @return void
+     */
+    public function __construct($products)
+    {
+        $this->products = $products;
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->subject('Expired Batch Order')
+                    ->markdown('emails.expired_batch-order_alert')
+                    ->with('products', $this->products);
+    }
+}

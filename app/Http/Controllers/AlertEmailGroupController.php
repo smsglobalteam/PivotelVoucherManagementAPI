@@ -10,6 +10,7 @@ use App\Http\Controllers\ErrorCodesController;
 use App\Models\ProductModel;
 use Illuminate\Support\Facades\DB;
 use App\Mail\ThresholdAlertMail;
+use App\Mail\ExpiredBatchOrder;
 use App\Models\AlertEmailLogsModel;
 use Illuminate\Support\Facades\Mail;
 use PhpParser\Node\Stmt\Else_;
@@ -23,17 +24,21 @@ class AlertEmailGroupController extends Controller
             ->leftJoin('voucher_main', function ($join) {
                 $join->on('product.id', '=', 'voucher_main.product_id')
                     ->where('voucher_main.available', true)
-                    ->whereNull('voucher_main.deplete_date');
+                    ->whereNull('voucher_main.deplete_date')
+                    ->where(function ($query) {
+                        $query->whereNull('voucher_main.expiry_date')
+                            ->orWhere('voucher_main.expiry_date', '>', now());
+                    });
             })
             ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
             ->groupBy('product.id')
+            ->with('batch_order')
             ->get();
 
         $alertEmailGroup = AlertEmailGroupModel::get();
         $alertProducts = [];
 
-        if($alertEmailGroup == null || $alertEmailGroup->isEmpty()) 
-        {
+        if ($alertEmailGroup == null || $alertEmailGroup->isEmpty()) {
             return response([
                 'message' => "No alert email group members found, add members to send alert emails",
                 'return_code' => '-101',
@@ -53,6 +58,17 @@ class AlertEmailGroupController extends Controller
                 } catch (\Exception $e) {
                     return response([
                         'message' => 'Email was not sent. An error occurred.',
+                        'error' => $e->getMessage()
+                    ], 400);
+                }
+            }
+
+            foreach ($alertEmailGroup as $recipient) {
+                try {
+                    Mail::to($recipient->email)->send(new ExpiredBatchOrder($alertProducts));
+                } catch (\Exception $e) {
+                    return response([
+                        'message' => 'Batch order email was not sent. An error occurred.',
                         'error' => $e->getMessage()
                     ], 400);
                 }
@@ -93,17 +109,21 @@ class AlertEmailGroupController extends Controller
             ->leftJoin('voucher_main', function ($join) {
                 $join->on('product.id', '=', 'voucher_main.product_id')
                     ->where('voucher_main.available', true)
-                    ->whereNull('voucher_main.deplete_date');
+                    ->whereNull('voucher_main.deplete_date')
+                    ->where(function ($query) {
+                        $query->whereNull('voucher_main.expiry_date')
+                            ->orWhere('voucher_main.expiry_date', '>', now());
+                    });
             })
             ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
             ->groupBy('product.id')
+            ->with('batch_order')
             ->get();
 
         $alertEmailGroup = AlertEmailGroupModel::get();
         $alertProducts = [];
 
-        if($alertEmailGroup == null || $alertEmailGroup->isEmpty()) 
-        {
+        if ($alertEmailGroup == null || $alertEmailGroup->isEmpty()) {
             return response([
                 'message' => "No alert email group members found, add members to send alert emails",
                 'return_code' => '-101',
@@ -122,7 +142,18 @@ class AlertEmailGroupController extends Controller
                     Mail::to($recipient->email)->send(new ThresholdAlertMail($alertProducts));
                 } catch (\Exception $e) {
                     return response([
-                        'message' => 'Email was not sent. An error occurred.',
+                        'message' => 'Threshold email was not sent. An error occurred.',
+                        'error' => $e->getMessage()
+                    ], 400);
+                }
+            }
+
+            foreach ($alertEmailGroup as $recipient) {
+                try {
+                    Mail::to($recipient->email)->send(new ExpiredBatchOrder($alertProducts));
+                } catch (\Exception $e) {
+                    return response([
+                        'message' => 'Batch order email was not sent. An error occurred.',
                         'error' => $e->getMessage()
                     ], 400);
                 }
@@ -156,10 +187,15 @@ class AlertEmailGroupController extends Controller
             ->leftJoin('voucher_main', function ($join) {
                 $join->on('product.id', '=', 'voucher_main.product_id')
                     ->where('voucher_main.available', true)
-                    ->whereNull('voucher_main.deplete_date');
+                    ->whereNull('voucher_main.deplete_date')
+                    ->where(function ($query) {
+                        $query->whereNull('voucher_main.expiry_date')
+                            ->orWhere('voucher_main.expiry_date', '>', now());
+                    });
             })
             ->select('product.*', DB::raw('COUNT(voucher_main.id) as available_voucher_count'))
             ->groupBy('product.id')
+            ->with('batch_order')
             ->get();
 
         $alertEmailGroup = AlertEmailGroupModel::get();
@@ -264,7 +300,7 @@ class AlertEmailGroupController extends Controller
     public function updateAlertEmailGroup(Request $request, $id, ErrorCodesController $errorCodesController)
     {
         $alertEmailGroup = AlertEmailGroupModel::where('id', $id)->first();
-        
+
         if (!$alertEmailGroup) {
             return response([
                 'message' => "Alert email group member not found",

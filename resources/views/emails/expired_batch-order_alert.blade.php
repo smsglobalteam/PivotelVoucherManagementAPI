@@ -1,13 +1,20 @@
 @component('mail::message')
-# Threshold Alerts
+# Expired Batch Orders
 
-<p>Please check the voucher level under the following products as they are currently running low:</p>
+<p>Please check the vouchers under the following batch orders:</p>
 
 @foreach ($products as $product)
-## Threshold Alert for Product: {{ $product->product_name }}
-**Order amount**: {{ $product->order_amount }}  
-**Threshold Level**: {{ $product->threshold_alert }}  
-**Available Vouchers Left**: {{ $product->available_voucher_count }} 
+## Expired Batch Orders for Product: {{ $product->product_name }}
+
+@if ($product->batch_order && count($product->batch_order) > 0)
+@foreach ($product->batch_order as $batch)
+- **Batch ID**: {{ $batch->batch_id }}
+- **Batch Count**: {{ $batch->batch_count }}
+- **Expiry Date**: {{ $batch->expiry_date }}
+<br>
+<br>
+@endforeach
+@endif
 
 ---
 
