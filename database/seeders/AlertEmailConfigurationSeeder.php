@@ -16,7 +16,7 @@ class AlertEmailConfigurationSeeder extends Seeder
     {
         $errorCodes = [
             ['configuration_name' => 'alert_email_toggle', 'configuration_value' => 1, 'configuration_description' => '1 to enable, 0 to disable email alert'],
-            ['configuration_name' => 'alert_email_interval', 'configuration_value' => 1, 'configuration_description' => 'Sets interval hours per email alert']
+            ['configuration_name' => 'alert_email_interval', 'configuration_value' => 180, 'configuration_description' => 'Sets interval hours per email alert']
             
         ];
 
