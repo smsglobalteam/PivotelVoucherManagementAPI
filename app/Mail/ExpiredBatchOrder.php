@@ -10,16 +10,16 @@ class ExpiredBatchOrder extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $products;
+    public $batchOrders;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($products)
+    public function __construct($batchOrders)
     {
-        $this->products = $products;
+        $this->batchOrders = $batchOrders;
     }
 
     /**
@@ -29,8 +29,8 @@ class ExpiredBatchOrder extends Mailable
      */
     public function build()
     {
-        return $this->subject('Expired Batch Order')
+        return $this->subject('Expiring Batch Order')
                     ->markdown('emails.expired_batch-order_alert')
-                    ->with('products', $this->products);
+                    ->with('batchOrders', $this->batchOrders);
     }
 }

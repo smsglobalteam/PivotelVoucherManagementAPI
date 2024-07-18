@@ -1,24 +1,17 @@
 @component('mail::message')
-# Expired Batch Orders
+# Expiring Batch Orders
 
 <p>Please check the vouchers under the following batch orders:</p>
 
-@foreach ($products as $product)
-## Expired Batch Orders for Product: {{ $product->product_name }}
-
-@if ($product->batch_order && count($product->batch_order) > 0)
-@foreach ($product->batch_order as $batch)
-- **Batch ID**: {{ $batch->batch_id }}
-- **Batch Count**: {{ $batch->batch_count }}
-- **Expiry Date**: {{ $batch->expiry_date }}
-<br>
-<br>
-@endforeach
-@endif
+@foreach ($batchOrders as $batchOrder)
+- **Batch ID**: {{ $batchOrder->batch_id }}
+- **Batch Count**: {{ $batchOrder->batch_count }}
+- **Expiry Date**: {{ $batchOrder->expiry_date }}
+<br><br>
 
 ---
-
 @endforeach
+
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
         <td align="center">

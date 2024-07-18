@@ -136,6 +136,7 @@ Route::group(['middleware' => 'token-validation'], function () {
 
     //Alert Email Sender
     Route::get('/automatedAlert/{key}', [AlertEmailGroupController::class, 'automatedAlert']);
+    Route::get('/automatedExpiredBatchOrder/{key}', [AlertEmailGroupController::class, 'automatedExpiredBatchOrder']);
 
     //Alert Email Configuration
     Route::get('/alertEmailConfiguration/{key}', [AlertEmailConfigurationController::class, 'getConfigurationPublic']);

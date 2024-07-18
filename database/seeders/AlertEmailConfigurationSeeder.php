@@ -16,8 +16,10 @@ class AlertEmailConfigurationSeeder extends Seeder
     {
         $errorCodes = [
             ['configuration_name' => 'alert_email_toggle', 'configuration_value' => 1, 'configuration_description' => '1 to enable, 0 to disable email alert'],
-            ['configuration_name' => 'alert_email_interval', 'configuration_value' => 180, 'configuration_description' => 'Sets interval hours per email alert']
-            
+            ['configuration_name' => 'alert_email_interval', 'configuration_value' => 180, 'configuration_description' => 'Sets interval hours per email alert'],
+            ['configuration_name' => 'batch_expiry_interval', 'configuration_value' => 180, 'configuration_description' => 'Sets interval hours per batch expiry alert'],
+            ['configuration_name' => 'batch_expiry_days_from_now', 'configuration_value' => 48, 'configuration_description' => 'Set the days from now to trigger batch expiry alert'],
+            ['configuration_name' => 'batch_expiry_email_toggle', 'configuration_value' => 1, 'configuration_description' => '1 to enable, 0 to disable batch expiry alert'],
         ];
 
         foreach ($errorCodes as $code) {
