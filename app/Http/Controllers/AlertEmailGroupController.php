@@ -198,27 +198,27 @@ class AlertEmailGroupController extends Controller
             ], 400);
         }
 
-        // if (!$batchOrder->isEmpty()) {
+        if (!$batchOrder->isEmpty()) {
 
-        //     foreach ($alertEmailGroup as $recipient) {
-        //         try {
-        //             Mail::to($recipient->email)->send(new ExpiredBatchOrder($batchOrder));
-        //         } catch (\Exception $e) {
-        //             return response([
-        //                 'message' => 'Batch order email was not sent. An error occurred.',
-        //                 'error' => $e->getMessage()
-        //             ], 400);
-        //         }
-        //     }
-        // }
+            foreach ($alertEmailGroup as $recipient) {
+                try {
+                    Mail::to($recipient->email)->send(new ExpiredBatchOrder($batchOrder));
+                } catch (\Exception $e) {
+                    return response([
+                        'message' => 'Batch order email was not sent. An error occurred.',
+                        'error' => $e->getMessage()
+                    ], 400);
+                }
+            }
+        }
 
         if (!$batchOrder->isEmpty()) {
-            // $alertEmailLog = new AlertEmailLogsModel();
-            // $alertEmailLog->call_method = "automated";
-            // $alertEmailLog->call_by = "automated_system";
-            // $alertEmailLog->email = json_encode($alertEmailGroup->pluck('email'));
-            // $alertEmailLog->alerted_products = json_encode($batchOrder);
-            // $alertEmailLog->save();
+            $alertEmailLog = new AlertEmailLogsModel();
+            $alertEmailLog->call_method = "automated";
+            $alertEmailLog->call_by = "automated_system";
+            $alertEmailLog->email = json_encode($alertEmailGroup->pluck('email'));
+            $alertEmailLog->alerted_products = json_encode($batchOrder);
+            $alertEmailLog->save();
 
             $message = "Alert emails sent successfully";
         }
