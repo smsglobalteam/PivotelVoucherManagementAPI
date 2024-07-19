@@ -44,6 +44,8 @@ class ErrorCodeReferenceSeeder extends Seeder
             ['error_code' => '-6012', 'error_message' => 'The batch count does not match the number of rows in the CSV', 'error_description' => 'Mismatch between batch count and the contents of the file.'],
             ['error_code' => '-6013', 'error_message' => 'The serial is a duplicate in the CSV.', 'error_description' => 'Repeated serial number found in the uploaded CSV file.'],
             ['error_code' => '-6014', 'error_message' => 'The PUK is a duplicate in the CSV.', 'error_description' => 'Repeated PUK number detected in the file.'],
+            ['error_code' => '-6015', 'error_message' => 'The expiry days must be an integer.', 'error_description' => ''],
+            ['error_code' => '-6016', 'error_message' => 'The expiry days cannot be a negative integer', 'error_description' => ''],
 
             //Voucher Errors
             ['error_code' => '-7002', 'error_message' => 'The serial is required.', 'error_description' => 'Serial number must be provided for registration.'],

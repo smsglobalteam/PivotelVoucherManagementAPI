@@ -183,16 +183,10 @@ class AlertEmailGroupController extends Controller
 
         $configuration = AlertEmailConfigurationModel::where('configuration_name', 'batch_expiry_days_from_now')->first();
 
-        // Normalize the dates to compare only the date parts
-        $now = Carbon::now()->startOfDay();
-        $expiry_range_start = $now;
-        $expiry_range_end = $now->copy()->addHours($configuration->configuration_value)->endOfDay();
+        $currentDate = Carbon::now()->format('Y-m-d');
 
-        $batchOrderClean = BatchOrderModel::get();
+        $batchOrder = BatchOrderModel::whereRaw("DATE(expiry_date) BETWEEN ? AND DATE_ADD(?, INTERVAL expiry_days DAY)", [$currentDate, $currentDate])->get();
 
-        $batchOrder = BatchOrderModel::whereNotNull('expiry_date')
-            ->whereBetween('expiry_date', [$expiry_range_start, $expiry_range_end])
-            ->get();
 
         $alertEmailGroup = AlertEmailGroupModel::get();
         $message = "All vouchers are above threshold";
@@ -204,27 +198,27 @@ class AlertEmailGroupController extends Controller
             ], 400);
         }
 
-        if (!$batchOrder->isEmpty()) {
+        // if (!$batchOrder->isEmpty()) {
 
-            foreach ($alertEmailGroup as $recipient) {
-                try {
-                    Mail::to($recipient->email)->send(new ExpiredBatchOrder($batchOrder));
-                } catch (\Exception $e) {
-                    return response([
-                        'message' => 'Batch order email was not sent. An error occurred.',
-                        'error' => $e->getMessage()
-                    ], 400);
-                }
-            }
-        }
+        //     foreach ($alertEmailGroup as $recipient) {
+        //         try {
+        //             Mail::to($recipient->email)->send(new ExpiredBatchOrder($batchOrder));
+        //         } catch (\Exception $e) {
+        //             return response([
+        //                 'message' => 'Batch order email was not sent. An error occurred.',
+        //                 'error' => $e->getMessage()
+        //             ], 400);
+        //         }
+        //     }
+        // }
 
         if (!$batchOrder->isEmpty()) {
-            $alertEmailLog = new AlertEmailLogsModel();
-            $alertEmailLog->call_method = "automated";
-            $alertEmailLog->call_by = "automated_system";
-            $alertEmailLog->email = json_encode($alertEmailGroup->pluck('email'));
-            $alertEmailLog->alerted_products = json_encode($batchOrder);
-            $alertEmailLog->save();
+            // $alertEmailLog = new AlertEmailLogsModel();
+            // $alertEmailLog->call_method = "automated";
+            // $alertEmailLog->call_by = "automated_system";
+            // $alertEmailLog->email = json_encode($alertEmailGroup->pluck('email'));
+            // $alertEmailLog->alerted_products = json_encode($batchOrder);
+            // $alertEmailLog->save();
 
             $message = "Alert emails sent successfully";
         }

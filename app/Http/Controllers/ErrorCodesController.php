@@ -218,6 +218,12 @@ class ErrorCodesController extends Controller
                 case 'file_mimes':
                     $errorCode = '-6011';
                     break;
+                case 'expiry_days_integer':
+                    $errorCode = '-6015';
+                    break;
+                case 'expiry_days_min':
+                    $errorCode = '-6016';
+                    break;
                 //-6012, -6013, -6014 are not present here as they are not validation rules but custom checks
 
                 // Voucher processing errors
@@ -236,7 +242,7 @@ class ErrorCodesController extends Controller
                 case 'value_integer':
                     $errorCode = '-7006';
                     break;
-                case 'expiry_date_date_format':
+                case 'expiry_date_format':
                     $errorCode = '-7007';
                     break;
                 case 'expiry_date_after':
